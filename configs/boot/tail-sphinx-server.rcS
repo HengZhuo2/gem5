@@ -23,8 +23,17 @@ echo "100000" > /proc/sys/net/core/netdev_max_backlog
 /sbin/m5 resetstats
 
 echo -n "signal client to begin..."
-echo "server ready" | netcat -c $CLIENT 8000
-echo "done."
+echo "server ready" | netcat -c $CLIENT 8080
 
-echo "starting bash..."
+cd /tailbench/sphinx
+echo "run sphinx server..."
+
+# NTHREADS=1
+# MAXREQS=3000
+# WARMUPREQS=3000
+
+ LD_LIBRARY_PATH=./sphinx-install/lib:${LD_LIBRARY_PATH} TBENCH_SERVER=10.0.0.1 \
+ 	TBENCH_MAXREQS=2 TBENCH_WARMUPREQS=2 ./decoder_server_networked -t 1
+
+echo "done."
 exec /bin/bash

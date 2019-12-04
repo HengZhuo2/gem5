@@ -18,6 +18,10 @@ echo "262143" > /proc/sys/net/core/wmem_default
 echo "262143" > /proc/sys/net/core/optmem_max
 echo "100000" > /proc/sys/net/core/netdev_max_backlog
 
+/sbin/m5 checkpoint
+/sbin/m5 dumpstats
+/sbin/m5 resetstats
+
 echo -n "waiting for server..."
 netcat -c -l -p 8000
 

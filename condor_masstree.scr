@@ -1,0 +1,59 @@
+executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/masstree/500_3000_3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-500 -r 2 --caches --l2cache --l1i_size=32kB
+initialdir = /research/hzhuo2/gem5-tail/
+output = /research/hzhuo2/gem5-tail/m5out/masstree/500_3000_3000/condor_out
+error = /research/hzhuo2/gem5-tail/m5out/masstree/500_3000_3000/condor_err
+log = /research/hzhuo2/gem5-tail/m5out/masstree/500_3000_3000/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/masstree/1000_3000_3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1000 -r 2 --caches --l2cache --l1i_size=32kB
+initialdir = /research/hzhuo2/gem5-tail/
+output = /research/hzhuo2/gem5-tail/m5out/masstree/1000_3000_3000/condor_out
+error = /research/hzhuo2/gem5-tail/m5out/masstree/1000_3000_3000/condor_err
+log = /research/hzhuo2/gem5-tail/m5out/masstree/1000_3000_3000/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/masstree/1500_3000_3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1500 -r 2 --caches --l2cache --l1i_size=32kB
+initialdir = /research/hzhuo2/gem5-tail/
+output = /research/hzhuo2/gem5-tail/m5out/masstree/1500_3000_3000/condor_out
+error = /research/hzhuo2/gem5-tail/m5out/masstree/1500_3000_3000/condor_err
+log = /research/hzhuo2/gem5-tail/m5out/masstree/1500_3000_3000/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/masstree/2000_3000_3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2000 -r 2 --caches --l2cache --l1i_size=32kB
+initialdir = /research/hzhuo2/gem5-tail/
+output = /research/hzhuo2/gem5-tail/m5out/masstree/2000_3000_3000/condor_out
+error = /research/hzhuo2/gem5-tail/m5out/masstree/2000_3000_3000/condor_err
+log = /research/hzhuo2/gem5-tail/m5out/masstree/2000_3000_3000/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/masstree/2500_3000_3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2500 -r 2 --caches --l2cache --l1i_size=32kB
+initialdir = /research/hzhuo2/gem5-tail/
+output = /research/hzhuo2/gem5-tail/m5out/masstree/2500_3000_3000/condor_out
+error = /research/hzhuo2/gem5-tail/m5out/masstree/2500_3000_3000/condor_err
+log = /research/hzhuo2/gem5-tail/m5out/masstree/2500_3000_3000/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue

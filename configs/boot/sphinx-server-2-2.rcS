@@ -18,13 +18,22 @@ echo "262143" > /proc/sys/net/core/wmem_default
 echo "262143" > /proc/sys/net/core/optmem_max
 echo "100000" > /proc/sys/net/core/netdev_max_backlog
 
+echo -n "signal client to begin..."
+echo "server ready" | netcat -c $CLIENT 8080
+
 /sbin/m5 checkpoint
 /sbin/m5 dumpstats
 /sbin/m5 resetstats
 
-echo -n "signal client to begin..."
-echo "server ready" | netcat -c $CLIENT 8000
-echo "done."
+cd /tailbench/sphinx
+echo "run sphinx server..."
 
-echo "starting bash..."
+# NTHREADS=1
+# MAXREQS=3000
+# WARMUPREQS=3000
+
+ LD_LIBRARY_PATH=./sphinx-install/lib:${LD_LIBRARY_PATH} TBENCH_SERVER=10.0.0.1 \
+ 	TBENCH_MAXREQS=2 TBENCH_WARMUPREQS=2 ./decoder_server_networked -t 4
+
+echo "done."
 exec /bin/bash

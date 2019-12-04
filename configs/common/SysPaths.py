@@ -29,7 +29,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-from six import string_types
+# from six import string_types
 import os, sys
 
 config_path = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +39,7 @@ class PathSearchFunc(object):
     _sys_paths = None
 
     def __init__(self, subdirs, sys_paths=None):
-        if isinstance(subdirs, string_types):
+        if isinstance(subdirs, basestring):
             subdirs = [subdirs]
         self._subdir = os.path.join(*subdirs)
         if sys_paths:

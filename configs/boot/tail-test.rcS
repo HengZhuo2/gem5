@@ -1,0 +1,27 @@
+#!/bin/sh
+echo "setting up testing tail image..."
+
+/sbin/m5 checkpoint
+/sbin/m5 dumpstats
+/sbin/m5 resetstats
+
+# echo -n "waiting for server..."
+# netcat -c -l -p 8000
+# echo -n "maksing sure this works for server..."
+# cd /test
+# ./helloword.arm
+# ping -c 5 $SERVER
+
+echo "ls at root..."
+ls
+
+cd /tailbench
+echo "ls at tailbench..."
+ls
+echo "run sphinx..."
+cd sphinx
+./run.sh
+echo "parse results..."
+../utilities/parselats.py lats.bin
+echo "shuting down..."
+/sbin/m5 exit

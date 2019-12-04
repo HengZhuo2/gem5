@@ -1,0 +1,24 @@
+
+fisrt time:
+build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimplleCPU --num-cpus=4 --disk-image=$M5_PATH/disks/aarch64-ubuntu-trusty-headless.img --kernel=$M5_PATH/binaries/vmlinux.aarch64.20140821 --benchmark=Ping2 --dtb-filename=$M5_PATH/binaries/vexpress.aarch64.20140821.dtb
+
+return from checkpoint
+build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=O3_ARM_v7a_3 --num-cpus=4 --disk-image=$M5_PATH/disks/aarch64-ubuntu-trusty-headless.img --kernel=$M5_PATH/binaries/vmlinux.aarch64.20140821 --benchmark=Ping2 -r 2 --caches
+
+util/term/m5term localhost 3456
+
+build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM --cpu-type=AtomicSimplleCPU --num-cpus=4 --disk-image=$M5_PATH/../arm2018/debian_wheezy_armhf_standard.qcow2 --kernel=$M5_PATH/../arm2018/vmlinuz-3.2.0-4-vexpress 
+
+
+
+build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/test4/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vexpress-v2p-ca15-tc1-gem5_4cpus.dtb --disk-image=/research/hzhuo2/gem5-tail/images/arm2018/disks/aarch64-trusty-tail-empty.img
+
+build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/test4/ configs/example/fs.py --machine-type=VExpress_GEM5_V1 --cpu-type=AtomicSimpleCPU --num-cpus=4 --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --disk-image=/research/hzhuo2/gem5-tail/images/arm2018/disks/aarch64-trusty-tail-specjbb.img --script=/research/hzhuo2/gem5-tail/configs/boot/tail-test.rcS
+
+build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx
+
+build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree
+
+build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/heng_fs-test/ configs/example/heng_fs.py --machine-type=VExpress_EMM64 --cpu-type=atomic --num-cpus=4 --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb
+
+build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/heng_fs-test/ configs/example/heng_fs.py --machine-type=VExpress_EMM64 --cpu-type=atomic --num-cpus=4 --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb

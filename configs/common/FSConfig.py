@@ -448,6 +448,10 @@ def connectX86ClassicSystem(x86_sys, numCPUs):
     x86_sys.bridge = Bridge(delay='50ns')
     x86_sys.bridge.master = x86_sys.iobus.slave
     x86_sys.bridge.slave = x86_sys.membus.master
+
+    x86_sys.ethernet.pio = x86_sys.iobus.master     # x86 Implementation #
+    # x86_sys.ethernet.config = x86_sys.iobus.master  # x86 Implementation #
+    x86_sys.ethernet.dma = x86_sys.iobus.slave      # x86 Implementation #
     # Allow the bridge to pass through:
     #  1) kernel configured PCI device memory map address: address range
     #     [0xC0000000, 0xFFFF0000). (The upper 64kB are reserved for m5ops.)
@@ -482,9 +486,14 @@ def connectX86RubySystem(x86_sys):
     # North Bridge
     x86_sys.iobus = IOXBar()
 
+    x86_sys.ethernet.pio = x86_sys.iobus.master     # x86 Implementation #
+    # x86_sys.ethernet.config = x86_sys.iobus.master  # x86 Implementation #
+
     # add the ide to the list of dma devices that later need to attach to
     # dma controllers
-    x86_sys._dma_ports = [x86_sys.pc.south_bridge.ide.dma]
+    # x86_sys._dma_ports = [x86_sys.pc.south_bridge.ide.dma]
+    [x86_sys.pc.south_bridge.ide.dma, x86_sys.ethernet.dma]
+    # x86 Implementation #
     x86_sys.pc.attachIO(x86_sys.iobus, x86_sys._dma_ports)
 
 
@@ -496,9 +505,7 @@ def makeX86System(mem_mode, numCPUs=1, mdesc=None, self=None, Ruby=False):
         # generic system
         mdesc = SysConfig()
     self.readfile = mdesc.script()
-
     self.mem_mode = mem_mode
-
     # Physical memory
     # On the PC platform, the memory region 0xC0000000-0xFFFFFFFF is reserved
     # for various devices.  Hence, if the physical memory size is greater than
@@ -603,6 +610,10 @@ def makeLinuxX86System(mem_mode, numCPUs=1, mdesc=None, Ruby=False,
                        cmdline=None):
     self = LinuxX86System()
 
+    # x86 Implementation
+    self.ethernet = IGbE_e1000(pci_bus=0, pci_dev=0, pci_func=0,
+                               InterruptLine=1, InterruptPin=1)
+    # self.ethernet = NSGigE(pci_bus=0, pci_dev=1, pci_func=0)
     # Build up the x86 system and then specialize it for Linux
     makeX86System(mem_mode, numCPUs, mdesc, self, Ruby)
 
@@ -664,7 +675,10 @@ def makeDualRoot(full_system, testSystem, driveSystem, dumpfile):
         self.etherlink.int0 = Parent.testsys.tsunami.ethernet.interface
         self.etherlink.int1 = Parent.drivesys.tsunami.ethernet.interface
     else:
-        fatal("Don't know how to connect these system together")
+        # fatal("Don't know how to connect these system together")
+        # x86 Implementation #
+        self.etherlink.int0 = Parent.testsys.ethernet.interface
+        self.etherlink.int1 = Parent.drivesys.ethernet.interface
 
     if dumpfile:
         self.etherdump = EtherDump(file=dumpfile)
