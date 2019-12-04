@@ -1,0 +1,52 @@
+./build/X86/gem5.opt --stats-file=stats.txt.CentOS-x86_64_10GB_v2 configs/example/fs.py --kernel=/research/dibakar/gem5/linux-2.6.32-431.5.1.el6/vmlinux_working --disk-image=/research/dibakar/gem5/disks/CentOS-x86_64.img --script=/research/dibakar/gem5/configs/boot/php_test3.rcS
+
+./build/X86/gem5.opt --stats-file=stats.txt.CentOS-x86_64_10GB_v8 configs/example/fs.py --caches --l2cache --kernel=/research/dibakar/gem5/linux-2.6.32-431.5.1.el6/vmlinux_working --disk-image=/research/dibakar/gem5/disks/CentOS-x86_64.img --script=/research/dibakar/gem5/configs/boot/php_test3.rcS --cpu-type=detailed -r 4
+
+
+./build/X86/gem5.opt --debug-flags=CommitInst --debug-start=5820000000000 --debug-file=test_prog2.O3CPU.debug --outdir=/home/dibakar/gem5_dynlib/gem5/m5out/ configs/example/fs.py --caches --l2cache --kernel=/research/dibakar/gem5/linux-2.6.32-431.5.1.el6/vmlinux_working --disk-image=/research/dibakar/gem5/disks/CentOS-x86_64_latest_hhvm.img --script=/research/dibakar/gem5/configs/boot/php_test1.rcS --cpu-type=detailed -r 1
+
+
+./build/X86/gem5.opt configs/example/se.py --caches --l2cache --cmd=/research/dibakar/pin_trace_gen/spec2006/libquantum/libquantum_base.x86_64_sse -o "15 2" --cpu-type=detailed
+
+./build/X86/gem5_btbtrace.opt --debug-flags=BTB --debug-start=41735114315000 --debug-end=41781183064500 --debug-file=debug_btbtrace.rev2 --outdir=/research/dibakar/gem5_dynlib/gem5/m5out/wordpress/dbcache_exp_body_plus_dbms/ --stats-file=stats.txt.detailed_cpu.btbtrace.rev2 configs/example/fs.py --caches --l2cache --l1i_size=512kB --l1i_assoc=8 --kernel=/research/dibakar/gem5/linux-2.6.32-431.5.1.el6/vmlinux_working --disk-image=/research/dibakar/gem5/disks/CentOS-x86_64_w_wp_drupal.img --script=/research/dibakar/gem5_dynlib/gem5/configs/boot/wp_dbcache_mysite_index_body_plus_dbms.rcS --cpu-type=detailed -r 8
+
+
+for Heng
+
+./build/X86/gem5.opt --stats-file=stats.txt.CentOS-x86_64_10GB_v2 configs/example/fs.py --kernel=/research/hzhuo2/diskimg/vmlinux_working --disk-image=/research/hzhuo2/diskimg/CentOS-x86_64.img --script=/research/hzhuo2/gem5/configs/boot/php_test3.rcS
+
+build/X86/gem5.opt configs/example/fs.py --caches --l2cache --l1i_size=32kB --l1i_assoc=4 --kernel=/research/hzhuo2/diskimg/vmlinux_working /research/hzhuo2/diskimg/CentOS-x86_64_w_mw.img --script=/research/hzhuo2/gem5_test/gem5/configs/boot/mw_dbcache_uw-madison.rcS --cpu-type=AtomicSimpleCPU
+
+# this is taken from Jason's learn gem5, can boot, will have "welcome to centOS", then "Exiting.. bacause checkpoint" 
+build/X86/gem5.opt configs/full_system/run.py
+
+build/X86/gem5.opt configs/example/tca.py --cpu-type=DerivO3CPU --caches --l2cache --l1i_size=4MB --mem-size=8GB --cpu-clock=2GHz --sys-clock=2GHz -c tests/tca/test_david
+
+
+07/17 working on 
+
+executable = /research/dibakar/gem5_dynlib_OoO/gem5/build/X86/gem5_OoO8.opt
+arguments = --outdir=/research/dibakar/gem5_dynlib/gem5/m5out/drupal-7.31/oss/index_node_24/ --stats-file=stats.txt.btb4k_icache32kB_assoc4_OoO8 --json-config=config.json.btb4k_icache32kB_assoc4_OoO8 configs/example/fs.py --caches --l2cache --l1i_size=32kB --l1i_assoc=4 --kernel=/research/dibakar/gem5/linux-2.6.32-431.5.1.el6/vmlinux_working --disk-image=/research/dibakar/gem5/disks/CentOS-x86_64_w_drupal.img --script=/research/dibakar/gem5_dynlib/gem5/configs/boot/drupal7_no_dbcache_index_node_24.rcS --cpu-type=detailed -r 8
+initialdir = /research/dibakar/gem5_dynlib_OoO/gem5/
+output = /research/dibakar/gem5_dynlib/gem5/m5out/drupal-7.31/oss/index_node_24/condor_out
+error = /research/dibakar/gem5_dynlib/gem5/m5out/drupal-7.31/oss/index_node_24/condor_err
+log = /research/dibakar/gem5_dynlib/gem5/m5out/drupal-7.31/oss/index_node_24/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+build/X86/gem5_LT.opt --outdir=/research/hzhuo2/gem5_test/gem5/m5out/drupal-7.31/oss/index_node_24/ configs/example/fs.py --caches --l2cache --kernel=/research/hzhuo2/diskimg/vmlinux_working --disk-image=/research/hzhuo2/diskimg/CentOS-x86_64_w_drupal.img --script=/research/hzhuo2/gem5_test/gem5/configs/full_system/dibakar_boot/drupal7_no_dbcache_index_node_24.rcS --cpu-type=DerivO3CPU --checkpoint-dir=/research/hzhuo2/test_gem5/gem5/m5out/drupal-7.31/oss/index_node_24/ -r 8
+
+/research/hzhuo2/gem5_test/gem5/configs/full_system/dibakar_boot/drupal7_no_dbcache_index_node_24.rcS
+/research/hzhuo2/test_gem5/gem5/configs/full_system/dibakar_boot/drupal7_no_dbcache_index_node_24.rcS
+
+
+build/X86/gem5_LT.opt --outdir=/research/hzhuo2/gem5_test/gem5/m5out/drupal-7.31/oss/index_node_11/ configs/example/fs.py --caches --l2cache --l1i_size=32kB --l1i_assoc=4 --kernel=/research/hzhuo2/diskimg/vmlinux_working --disk-image=/research/hzhuo2/diskimg/CentOS-x86_64_w_drupal.img --script=/research/hzhuo2/gem5_test/gem5/configs/full_system/dibakar_boot/drupal7_no_dbcache_index_node_11.rcS --cpu-type=TimingSimpleCPU
+
+build/X86/gem5_LT.opt --outdir=/research/hzhuo2/gem5_test/gem5/m5out/mediawiki-1.26.2/oss/oss-small-no-scribunto/ configs/example/fs.py --caches --l2cache --l1i_size=32kB --l1i_assoc=4 --kernel=/research/hzhuo2/diskimg/vmlinux_working --disk-image=/research/hzhuo2/diskimg/CentOS-x86_64_w_mw.img --script=/research/hzhuo2/gem5_test/gem5/configs/full_system/dibakar_boot/mw_dbcache_hhvm.rcS --cpu-type=TimingSimpleCPU
+
+build/X86/gem5_LT.opt --outdir=/research/hzhuo2/gem5_test/gem5/m5out/mediawiki-1.26.2/oss/oss-small-no-scribunto/ configs/example/fs.py --caches --l2cache --l1i_size=32kB --l1i_assoc=4 --kernel=/research/hzhuo2/diskimg/vmlinux_working --disk-image=/research/hzhuo2/diskimg/CentOS-x86_64_w_mw.img --script=/research/hzhuo2/gem5_test/gem5/configs/full_system/dibakar_boot/mw_dbcache_hhvm.rcS --cpu-type=TimingSimpleCPU
+
+build/X86/gem5_LT.opt --outdir=/research/hzhuo2/gem5_test/gem5/m5out/mediawiki-1.26.2/oss/oss-small-no-scribunto/ configs/example/fs.py --caches --l2cache --l1i_size=32kB --l1i_assoc=4 --kernel=/research/hzhuo2/diskimg/vmlinux_working --disk-image=/research/hzhuo2/diskimg/CentOS-x86_64_w_mw.img --script=/research/hzhuo2/gem5_test/gem5/configs/full_system/dibakar_boot/mw_dbcache_hhvm.rcS --cpu-type=TimingSimpleCPU

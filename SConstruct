@@ -372,6 +372,9 @@ if main['GCC'] or main['CLANG']:
     main.Append(PSHLINKFLAGS=shared_partial_flags)
     main.Append(PLINKFLAGS=shared_partial_flags)
 
+    # THIS IS ONLY FOR HENG, SUGGESTED BY BUILD
+    main.Append(CCFLAGS=['-fPIC'])
+
     # Treat warnings as errors but white list some warnings that we
     # want to allow (e.g., deprecation warnings).
     main.Append(CCFLAGS=['-Werror',
