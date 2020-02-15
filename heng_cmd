@@ -26,14 +26,4 @@ build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail/m5out/heng_fs-test/ confi
 working on 02/09/2020
 command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-ping
 
-<<<<<<< Updated upstream
 command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-ping -r 2
-
-
-02/10 new build linux 4.15
-command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_GEM5_V1 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux-20200210 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_1cpu.dtb -b basic-ls --enable-context-switch-stats-dump
-
-command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_GEM5_V1 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux-20200210 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-ls
-=======
-command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-ping -r 2
->>>>>>> Stashed changes
