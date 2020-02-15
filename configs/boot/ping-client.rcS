@@ -26,4 +26,7 @@ echo -n "waiting for server..."
 netcat -c -l -p 8000
 
 ping -c 5 $SERVER
+
+echo -n "ping client finished, exit..."
 /sbin/m5 exit
+# exec /bin/bash

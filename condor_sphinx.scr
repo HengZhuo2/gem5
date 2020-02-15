@@ -1,5 +1,5 @@
 executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.2_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.2
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.2_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.2 -r 2 --caches --l2cache --l1i_size=32kB
 initialdir = /research/hzhuo2/gem5-tail/
 output = /research/hzhuo2/gem5-tail/m5out/sphinx/0.2_2_2/condor_out
 error = /research/hzhuo2/gem5-tail/m5out/sphinx/0.2_2_2/condor_err
@@ -11,7 +11,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.4_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.4
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.4_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.4 -r 2 --caches --l2cache --l1i_size=32kB
 initialdir = /research/hzhuo2/gem5-tail/
 output = /research/hzhuo2/gem5-tail/m5out/sphinx/0.4_2_2/condor_out
 error = /research/hzhuo2/gem5-tail/m5out/sphinx/0.4_2_2/condor_err
@@ -23,7 +23,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.6_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.6
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.6_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.6 -r 2 --caches --l2cache --l1i_size=32kB
 initialdir = /research/hzhuo2/gem5-tail/
 output = /research/hzhuo2/gem5-tail/m5out/sphinx/0.6_2_2/condor_out
 error = /research/hzhuo2/gem5-tail/m5out/sphinx/0.6_2_2/condor_err
@@ -35,7 +35,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.8_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.8
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/0.8_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-0.8 -r 2 --caches --l2cache --l1i_size=32kB
 initialdir = /research/hzhuo2/gem5-tail/
 output = /research/hzhuo2/gem5-tail/m5out/sphinx/0.8_2_2/condor_out
 error = /research/hzhuo2/gem5-tail/m5out/sphinx/0.8_2_2/condor_err
@@ -47,7 +47,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/1.0_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-1.0
+arguments = --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/1.0_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-1.0 -r 2 --caches --l2cache --l1i_size=32kB
 initialdir = /research/hzhuo2/gem5-tail/
 output = /research/hzhuo2/gem5-tail/m5out/sphinx/1.0_2_2/condor_out
 error = /research/hzhuo2/gem5-tail/m5out/sphinx/1.0_2_2/condor_err

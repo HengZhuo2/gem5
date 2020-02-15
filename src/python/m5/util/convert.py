@@ -28,9 +28,9 @@
 # Authors: Nathan Binkert
 #          Gabe Black
 
-import six
-if six.PY3:
-    long = int
+# import six
+# if six.PY3:
+#     long = int
 
 # metric prefixes
 atto  = 1.0e-18

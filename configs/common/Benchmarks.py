@@ -165,6 +165,11 @@ Benchmarks = {
     'tail-test':        [SysConfig('tail-test.rcS','256MB',
                                    'aarch64-trusty-tail.img')],
 
+    'tail-ping':        [SysConfig('ping-server.rcS','2048MB',
+                                   'aarch64-trusty-tail.img'),
+                         SysConfig('ping-client.rcS','2048MB',
+                                   'aarch64-trusty-tail.img')],
+
     'tail-sphinx-0.2':  [SysConfig('sphinx-server-2-2.rcS','2048MB',
                                    'aarch64-trusty-tail-sphinx.img'),
                          SysConfig('sphinx-client-0.2.rcS','2048MB',
