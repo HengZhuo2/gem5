@@ -32,7 +32,6 @@
 // assume that the sc_bind macro will work without explicitly including the
 // boost headers. This is in contradiction to the spec which says boost isn't
 // a required dependency.
-#include <boost/bind.hpp>
 
 #include "channel/_channel.hh"
 #include "core/_core.hh"

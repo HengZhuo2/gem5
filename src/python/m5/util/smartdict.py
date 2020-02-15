@@ -41,9 +41,9 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-import six
-if six.PY3:
-    long = int
+# import six
+# if six.PY3:
+#     long = int
 
 from .convert import *
 from .attrdict import attrdict
