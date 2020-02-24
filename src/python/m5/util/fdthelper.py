@@ -35,9 +35,9 @@
 #
 # Author: Glenn Bergmans
 
-# import six
-# if six.PY3:
-#     long = int
+import six
+if six.PY3:
+    long = int
 
 from m5.ext.pyfdt import pyfdt
 import re
