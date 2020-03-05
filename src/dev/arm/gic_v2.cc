@@ -366,7 +366,7 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
             if ((iar.ack_id == 100) &&
                 (name().find("testsys") != std::string::npos)){
                 cprintf("GICC_IAR Dump\n");
-                mainEventQueue[0]->dump();
+                // mainEventQueue[0]->dump();
                 mainEventQueue[0]->delayVT();
             }
 
@@ -627,7 +627,7 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
             (name().find("testsys") != std::string::npos)){
             cprintf("GICC_EOIR Dump\n");
             mainEventQueue[0]->resumeVT();
-            mainEventQueue[0]->dump();
+            // mainEventQueue[0]->dump();
         }
 
         break;
