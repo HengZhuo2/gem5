@@ -32,9 +32,20 @@ command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_G
 command line: build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_GEM5_V1 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux-20200210 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-ls
 
 debug thing:
- build/ARM/gem5.opt --debug-flag=Interrupt,GIC,Decode --debug-start=1543011394000 --debug-end=1543018250000 configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_1cpu.dtb -b tail-ping -r 2 --enable-context-switch-stats-dump > interrupts.txt
+ build/ARM/gem5.opt --debug-flag=Interrupt,GIC --debug-start=1543011394000 --debug-end=1543018250000 configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_1cpu.dtb -b tail-ping -r 2 --enable-context-switch-stats-dump > interrupts.txt
 
  02/16 debug cmd
  gdb build/ARM/gem5.opt
 
 run --debug-break=1543011526000 configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=DerivO3CPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_1cpu.dtb -b tail-ping -r 2 --caches 
+
+03/02
+run --debug-break=5332614286500 configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=DerivO3CPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --num-cpus=4 -b tail-ping -r 2 --caches
+
+run --debug-break=6363223354000 --outdir=/research/hzhuo2/gem5-tail/m5out/sphinx/1.0_2_2/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-sphinx-1.0 -r 2 --caches
+
+b gic_v2.cc:629
+
+build/ARM/gem5.opt --debug-flag=Interrupt,GIC configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --num-cpus=4 -b tail-ping -r 2 > interrupts.txt
+
+build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=DerivO3CPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --num-cpus=4 -b tail-ping
