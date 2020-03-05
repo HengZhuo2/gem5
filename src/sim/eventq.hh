@@ -617,6 +617,8 @@ class EventQueue
     Event *head;
     Tick _curTick;
 
+    Tick _haltTick;//record when is timer interrupt stopped
+
     //! Mutex to protect async queue.
     std::mutex async_queue_mutex;
 
@@ -831,6 +833,13 @@ class EventQueue
     void dump() const;
 
     bool debugVerify() const;
+
+    /**
+     * Function for delaying and resuming virt_timer event.
+     */
+    void delayVT();
+
+    void resumeVT();
 
     /**
      * Function for moving events from the async_queue to the main queue.

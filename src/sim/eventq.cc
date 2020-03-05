@@ -308,6 +308,64 @@ EventQueue::dump() const
     cprintf("============================================================\n");
 }
 
+//method created by Heng
+//calling this method will delay all virt_timer event to a very far tick
+// so they will not triggered during handling interrupts
+//resume those by calling resumeVT, place them to the right ticks
+void
+EventQueue::delayVT()
+{
+    _haltTick = curTick();
+
+    if (empty())
+        cprintf("<No Events to be delay>\n");
+    else {
+        cprintf("adding delay of %d to all timer interrupt\n", 50000000);
+        Event *nextBin = head;
+        while (nextBin) {
+            Event *nextInBin = nextBin;
+            while (nextInBin) {
+                // nextInBin->reschedule();
+                std::string eventName = nextInBin->name();
+                if (eventName.find("testsys.realview.generic_timer")
+                    != std::string::npos){
+                    reschedule(nextInBin, nextInBin->when()+50000000 , 1);
+                }
+                nextInBin = nextInBin->nextInBin;
+            }
+
+            nextBin = nextBin->nextBin;
+        }
+    }
+
+}
+
+void
+EventQueue::resumeVT()
+{
+    if (empty())
+        cprintf("<No Events to be resume>\n");
+    else {
+        Tick tickDelay = 50000000 - (curTick()-_haltTick);
+        cprintf("giveback delay of %d to all timer interrupt\n", tickDelay);
+        Event *nextBin = head;
+        while (nextBin) {
+            Event *nextInBin = nextBin;
+            while (nextInBin) {
+                // nextInBin->reschedule();
+                std::string eventName = nextInBin->name();
+                if (eventName.find("testsys.realview.generic_timer")
+                    != std::string::npos){
+                    reschedule(nextInBin, nextInBin->when()-tickDelay, 1);
+                }
+                nextInBin = nextInBin->nextInBin;
+            }
+
+            nextBin = nextBin->nextBin;
+        }
+    }
+}
+
 bool
 EventQueue::debugVerify() const
 {

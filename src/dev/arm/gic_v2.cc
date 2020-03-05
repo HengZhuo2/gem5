@@ -362,6 +362,14 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
             DPRINTF(Interrupt,
                     "CPU %d reading IAR.id=%d IAR.cpu=%d, iar=0x%x\n",
                     ctx, iar.ack_id, iar.cpu_id, iar);
+
+            if ((iar.ack_id == 100) &&
+                (name().find("testsys") != std::string::npos)){
+                cprintf("GICC_IAR Dump\n");
+                mainEventQueue[0]->dump();
+                mainEventQueue[0]->delayVT();
+            }
+
             cpuHighestInt[ctx] = SPURIOUS_INT;
             updateIntState(-1);
             clearInt(ctx, active_int);
@@ -614,6 +622,14 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
         updateRunPri();
         DPRINTF(Interrupt, "CPU %d done handling intr IAR = %d from cpu %d\n",
                 ctx, iar.ack_id, iar.cpu_id);
+
+        if ((iar.ack_id == 100) &&
+            (name().find("testsys") != std::string::npos)){
+            cprintf("GICC_EOIR Dump\n");
+            mainEventQueue[0]->resumeVT();
+            mainEventQueue[0]->dump();
+        }
+
         break;
       }
       case GICC_APR0:
