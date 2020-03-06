@@ -356,6 +356,8 @@ EventQueue::resumeVT()
                 std::string eventName = nextInBin->name();
                 if (eventName.find("testsys.realview.generic_timer")
                     != std::string::npos){
+                    cprintf("reschedule from %d to %d \n", nextInBin->when(),
+                        nextInBin->when()-tickDelay);
                     reschedule(nextInBin, nextInBin->when()-tickDelay, 1);
                 }
                 nextInBin = nextInBin->nextInBin;
