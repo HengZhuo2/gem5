@@ -114,5 +114,6 @@ DebugFlag('WorkItems')
 DebugFlag('ClockDomain')
 DebugFlag('VoltageDomain')
 DebugFlag('DVFS')
+DebugFlag('IrqHalt')
 
 CompoundFlag('SyscallAll', [ 'SyscallBase', 'SyscallVerbose'])
