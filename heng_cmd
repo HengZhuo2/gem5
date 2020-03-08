@@ -48,4 +48,7 @@ b gic_v2.cc:629
 
 build/ARM/gem5.opt --debug-flag=Interrupt,GIC configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --num-cpus=4 -b tail-ping -r 2 > interrupts.txt
 
-build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=DerivO3CPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --num-cpus=4 -b tail-ping
+build/ARM/gem5.opt configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=DerivO3CPU --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb --num-cpus=4 -b tail-ping 
+
+03/06 
+run /research/hzhuo2/gem5-tail/build/ARM/gem5.opt --outdir=/research/hzhuo2/gem5-tail-condor/m5out/debug-masstree configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2000 -r 8 --caches --l2cache --l1i_size=32kB

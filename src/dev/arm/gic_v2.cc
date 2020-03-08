@@ -365,9 +365,12 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
 
             if ((iar.ack_id == 100) &&
                 (name().find("testsys") != std::string::npos)){
-                cprintf("GICC_IAR Dump\n");
+                // cprintf("GICC_IAR Dump\n");
                 // mainEventQueue[0]->dump();
                 mainEventQueue[0]->delayVT();
+                for (int tidc = 1; tidc < 4; ++tidc){
+                    sys->getThreadContext(tidc)->irq_halting = true;
+                }
             }
 
             cpuHighestInt[ctx] = SPURIOUS_INT;
@@ -625,9 +628,12 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
 
         if ((iar.ack_id == 100) &&
             (name().find("testsys") != std::string::npos)){
-            cprintf("GICC_EOIR Dump\n");
+            // cprintf("GICC_EOIR Dump\n");
             mainEventQueue[0]->resumeVT();
             // mainEventQueue[0]->dump();
+            for (int tidc = 1; tidc < 4; ++tidc){
+                sys->getThreadContext(tidc)->irq_halting = false;
+            }
         }
 
         break;

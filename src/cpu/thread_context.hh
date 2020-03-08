@@ -118,6 +118,8 @@ class ThreadContext : public PCEventScope
         Halted
     };
 
+    bool irq_halting = false;
+
     virtual ~ThreadContext() { };
 
     virtual BaseCPU *getCpuPtr() = 0;

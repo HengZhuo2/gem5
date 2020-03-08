@@ -1437,8 +1437,9 @@ Execute::evaluate()
             " branch to complete\n");
     } else {
         ThreadID commit_tid = getCommittingThread();
+        bool irq_handling = cpu.getContext(0)->irq_halting;
 
-        if (commit_tid != InvalidThreadID) {
+        if ((commit_tid != InvalidThreadID) && (!irq_handling)) {
             ExecuteThreadInfo& commit_info = executeInfo[commit_tid];
 
             DPRINTF(MinorExecute, "Attempting to commit [tid:%d]\n",

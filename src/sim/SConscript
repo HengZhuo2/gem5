@@ -124,5 +124,6 @@ DebugFlag('VoltageDomain')
 DebugFlag('DVFS')
 DebugFlag('Vma')
 DebugFlag('PowerDomain')
+DebugFlag('IrqHalt')
 
 CompoundFlag('SyscallAll', [ 'SyscallBase', 'SyscallVerbose'])
