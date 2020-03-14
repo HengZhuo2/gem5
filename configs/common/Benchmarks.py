@@ -23,19 +23,23 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# Authors: Ali Saidi
 
 from __future__ import print_function
 from __future__ import absolute_import
 
-from common.SysPaths import script, disk, binary
+from .SysPaths import script, disk, binary
 from os import environ as env
 from m5.defines import buildEnv
 
+disk_path = '/research/hzhuo2/gem5-tail/images/arm2018/disks/'
+
 class SysConfig:
-    def __init__(self, script=None, mem=None, disks=None, rootdev=None,
+    def __init__(self, script=None, mem=None, disk=None, rootdev=None,
                  os_type='linux'):
         self.scriptname = script
-        self.disknames = disks
+        self.diskname = disk
         self.memsize = mem
         self.root = rootdev
         self.ostype = os_type
@@ -52,11 +56,23 @@ class SysConfig:
         else:
             return '128MB'
 
-    def disks(self):
-        if self.disknames:
-            return [disk(diskname) for diskname in self.disknames]
+    def disk(self):
+        if self.diskname:
+            return disk(disk_path+self.diskname)
+        elif buildEnv['TARGET_ISA'] == 'alpha':
+            return env.get('LINUX_IMAGE', disk('linux-latest.img'))
+        elif buildEnv['TARGET_ISA'] == 'x86':
+            return env.get('LINUX_IMAGE', disk('x86root.img'))
+        elif buildEnv['TARGET_ISA'] == 'arm':
+            #return env.get('LINUX_IMAGE', disk('linux-aarch32-ael.img'))
+            return env.get('LINUX_IMAGE',
+                disk('aarch64-ubuntu-trusty-headless.img'))
+        elif buildEnv['TARGET_ISA'] == 'sparc':
+            return env.get('LINUX_IMAGE', disk('disk.s10hw2'))
         else:
-            return []
+            print("Don't know what default disk image to use for %s ISA" %
+                buildEnv['TARGET_ISA'])
+            exit(1)
 
     def rootdev(self):
         if self.root:
@@ -67,12 +83,18 @@ class SysConfig:
     def os_type(self):
         return self.ostype
 
+
+# sphinximg= '/research/hzhuo2/gem5-tail/images/arm2018/'+
+#             'disks/aarch64-trusty-tail-sphinx.img'
+# masstreeimg= '/research/hzhuo2/gem5-tail/images/arm2018/'+
+#             'disks/aarch64-trusty-tail-masstree.img'
+
 # Benchmarks are defined as a key in a dict which is a list of SysConfigs
 # The first defined machine is the test system, the others are driving systems
 
 Benchmarks = {
-    'PovrayBench':  [SysConfig('povray-bench.rcS', '512MB', ['povray.img'])],
-    'PovrayAutumn': [SysConfig('povray-autumn.rcS', '512MB', ['povray.img'])],
+    'PovrayBench':  [SysConfig('povray-bench.rcS', '512MB', 'povray.img')],
+    'PovrayAutumn': [SysConfig('povray-autumn.rcS', '512MB', 'povray.img')],
 
     'NetperfStream':    [SysConfig('netperf-stream-client.rcS'),
                          SysConfig('netperf-server.rcS')],
@@ -99,8 +121,10 @@ Benchmarks = {
                          SysConfig('iscsi-client.rcS', '512MB')],
     'Validation':       [SysConfig('iscsi-server.rcS', '512MB'),
                          SysConfig('iscsi-client.rcS', '512MB')],
-    'Ping':             [SysConfig('ping-server.rcS',),
-                         SysConfig('ping-client.rcS')],
+    'Ping':             [SysConfig('ping-server.rcS','512MB',
+                                   'aarch64-ubuntu-trusty-headless.img'),
+                         SysConfig('ping-client.rcS','512MB',
+                                   'aarch64-ubuntu-trusty-headless.img')],
 
     'ValAccDelay':      [SysConfig('devtime.rcS', '512MB')],
     'ValAccDelay2':     [SysConfig('devtimewmr.rcS', '512MB')],
@@ -117,13 +141,13 @@ Benchmarks = {
 
     'MutexTest':        [SysConfig('mutex-test.rcS', '128MB')],
     'ArmAndroid-GB':    [SysConfig('null.rcS', '256MB',
-                    ['ARMv7a-Gingerbread-Android.SMP.mouse.nolock.clean.img'],
+                    'ARMv7a-Gingerbread-Android.SMP.mouse.nolock.clean.img',
                     None, 'android-gingerbread')],
-    'bbench-gb': [SysConfig('bbench-gb.rcS', '256MB',
-                        ['ARMv7a-Gingerbread-Android.SMP.mouse.nolock.img'],
+    'bbench-gb':        [SysConfig('bbench-gb.rcS', '256MB',
+                            'ARMv7a-Gingerbread-Android.SMP.mouse.nolock.img',
                             None, 'android-gingerbread')],
     'ArmAndroid-ICS':   [SysConfig('null.rcS', '256MB',
-                            ['ARMv7a-ICS-Android.SMP.nolock.clean.img'],
+                            'ARMv7a-ICS-Android.SMP.nolock.clean.img',
                             None, 'android-ics')],
     'bbench-ics':       [SysConfig('bbench-ics.rcS', '256MB',
                             'ARMv7a-ICS-Android.SMP.nolock.img',
@@ -167,10 +191,6 @@ Benchmarks = {
                          SysConfig('sphinx-client-1.0.rcS','2048MB',
                                    'aarch64-trusty-tail-sphinx.img')],
 
-    'tail-masstree-500':[SysConfig('masstree-server-3000-3000.rcS','2048MB',
-                                   'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-500.rcS','2048MB',
-                                   'aarch64-trusty-tail-masstree.img')],
     # 'tail-masstree-1000':[SysConfig('masstree-server-3000-3000.rcS','2048MB',
     #                                 'aarch64-trusty-tail-masstree.img'),
     #                      SysConfig('masstree-client-1000.rcS','2048MB',
@@ -188,51 +208,50 @@ Benchmarks = {
                          SysConfig('masstree-client-2500.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
 
-    'tail-masstree-100':[SysConfig('masstree-server-100.rcS','4096MB',
+    'tail-masstree-100':[SysConfig('masstree-server-100.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-100.rcS','4096MB',
+                         SysConfig('masstree-client-100.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-200':[SysConfig('masstree-server-200.rcS','4096MB',
+    'tail-masstree-200':[SysConfig('masstree-server-200.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-200.rcS','4096MB',
+                         SysConfig('masstree-client-200.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-300':[SysConfig('masstree-server-300.rcS','4096MB',
+    'tail-masstree-300':[SysConfig('masstree-server-300.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-300.rcS','4096MB',
+                         SysConfig('masstree-client-300.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-400':[SysConfig('masstree-server-400.rcS','4096MB',
+    'tail-masstree-400':[SysConfig('masstree-server-400.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-400.rcS','4096MB',
+                         SysConfig('masstree-client-400.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-500':[SysConfig('masstree-server-500.rcS','4096MB',
+    'tail-masstree-500':[SysConfig('masstree-server-500.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-500.rcS','4096MB',
+                         SysConfig('masstree-client-500.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-600':[SysConfig('masstree-server-600.rcS','4096MB',
+    'tail-masstree-600':[SysConfig('masstree-server-600.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-600.rcS','4096MB',
+                         SysConfig('masstree-client-600.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-700':[SysConfig('masstree-server-700.rcS','4096MB',
+    'tail-masstree-700':[SysConfig('masstree-server-700.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-700.rcS','4096MB',
+                         SysConfig('masstree-client-700.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-800':[SysConfig('masstree-server-800.rcS','4096MB',
+    'tail-masstree-800':[SysConfig('masstree-server-800.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-800.rcS','4096MB',
+                         SysConfig('masstree-client-800.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-900':[SysConfig('masstree-server-900.rcS','4096MB',
+    'tail-masstree-900':[SysConfig('masstree-server-900.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                         SysConfig('masstree-client-900.rcS','4096MB',
+                         SysConfig('masstree-client-900.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-1000':[SysConfig('masstree-server-1000.rcS','4096MB',
+    'tail-masstree-1000':[SysConfig('masstree-server-1000.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                          SysConfig('masstree-client-1000.rcS','4096MB',
+                          SysConfig('masstree-client-1000.rcS','2048MB',
                                    'aarch64-trusty-tail-masstree.img')],
-    'tail-masstree-1200':[SysConfig('masstree-server-1200.rcS','4096MB',
+    'tail-masstree-1200':[SysConfig('masstree-server-1200.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
-                          SysConfig('masstree-client-1200.rcS','4096MB',
-                                   'aarch64-trusty-tail-masstree.img')],                         
-
+                          SysConfig('masstree-client-1200.rcS','2048MB',
+                                   'aarch64-trusty-tail-masstree.img')],
 }
 
 benchs = list(Benchmarks.keys())
