@@ -32,11 +32,14 @@ echo "starting masstree client run ...."
 sleep 5
 echo "wake up"
 
-TBENCH_QPS=1000 TBENCH_MINSLEEPNS=10000 TBENCH_SERVER=10.0.0.1 \
-          chrt -r 99 ./mttest_client_networked
+/sbin/m5 checkpoint
+/sbin/m5 dumpstats
+/sbin/m5 resetstats
 
-echo "Done: $(date) $(ls -1 | wc -l), parsing results..."
-../utilities/parselats.py lats.bin
+TBENCH_QPS_ROI=1000 TBENCH_QPS_WARMUP=600 TBENCH_SERVER=10.0.0.1 \
+	chrt -r 99 ./mttest_client_networked
 
+echo "Done: copying results..."
+/sbin/m5 writefile lats.bin
 echo "finishing masstree.done...shuting down..."
 /sbin/m5 exit
