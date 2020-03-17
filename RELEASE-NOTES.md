@@ -1,6 +1,6 @@
-# Version 20.0.0.3
+# Version 20.1.0.0
 
-**[HOTFIX]** When using the ARM ISA, gem5 could crash when a guest tried to call m5ops. This was due to `m5ops_base` being incorrectly declared in `src/arch/arm/ArmSystem.py`. A fix was applied to remove this declaration.
+* m5.stats.dump() root argument renamed to roots to reflect the fact that it now takes a list of SimObjects
 
 # Version 20.0.0.2
 
