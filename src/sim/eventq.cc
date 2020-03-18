@@ -340,8 +340,8 @@ EventQueue::delayVT()
             while (nextInBin && !nextTimer) {
                 // nextInBin->reschedule();
                 std::string eventName = nextInBin->name();
-                if (eventName.find("testsys.realview.generic_timer.
-                    virt_timer0")
+                if (eventName.find("testsys.realview.generic_timer."
+                    "virt_timer0")
                     != std::string::npos){
                     reschedule(nextInBin, nextInBin->when()+50000000 , 1);
                     nextTimer = true;
@@ -358,8 +358,8 @@ EventQueue::delayVT()
             while (nextInBin && !nextTimer) {
                 // nextInBin->reschedule();
                 std::string eventName = nextInBin->name();
-                if (eventName.find("testsys.realview.generic_timer.
-                    virt_timer1")
+                if (eventName.find("testsys.realview.generic_timer."
+                    "virt_timer1")
                     != std::string::npos){
                     reschedule(nextInBin, nextInBin->when()+50000000 , 1);
                     nextTimer = true;
@@ -376,8 +376,8 @@ EventQueue::delayVT()
             while (nextInBin && !nextTimer) {
                 // nextInBin->reschedule();
                 std::string eventName = nextInBin->name();
-                if (eventName.find("testsys.realview.generic_timer.
-                    virt_timer2")
+                if (eventName.find("testsys.realview.generic_timer."
+                    "virt_timer2")
                     != std::string::npos){
                     reschedule(nextInBin, nextInBin->when()+50000000 , 1);
                     nextTimer = true;
@@ -394,8 +394,8 @@ EventQueue::delayVT()
             while (nextInBin && !nextTimer) {
                 // nextInBin->reschedule();
                 std::string eventName = nextInBin->name();
-                if (eventName.find("testsys.realview.generic_timer.
-                    virt_timer3")
+                if (eventName.find("testsys.realview.generic_timer."
+                    "virt_timer3")
                     != std::string::npos){
                     reschedule(nextInBin, nextInBin->when()+50000000 , 1);
                     nextTimer = true;
