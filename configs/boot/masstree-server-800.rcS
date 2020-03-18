@@ -28,7 +28,7 @@ echo "server ready" | netcat -c $CLIENT 8080
 cd /tailbench/masstree-tail
 echo "run masstree server..."
 
-TBENCH_MAXREQS=2400 TBENCH_WARMUPREQS=3000 TBENCH_SERVER=10.0.0.1 \
+TBENCH_MAXREQS=800 TBENCH_WARMUPREQS=1200 TBENCH_SERVER=10.0.0.1 \
 	chrt -r 99 ./mttest_server_networked -j4 mycsba masstree
 
 
