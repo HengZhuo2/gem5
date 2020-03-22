@@ -36,7 +36,7 @@ echo "wake up"
 /sbin/m5 dumpstats
 /sbin/m5 resetstats
 
-TBENCH_QPS_ROI=800 TBENCH_QPS_WARMUP=800 TBENCH_SERVER=10.0.0.1 \
+TBENCH_QPS_ROI=800 TBENCH_QPS_WARMUP=600 TBENCH_SERVER=10.0.0.1 \
 	chrt -r 99 ./mttest_client_networked
 
 echo "Done: copying results..."
