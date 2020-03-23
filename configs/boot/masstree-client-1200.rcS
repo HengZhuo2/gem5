@@ -37,7 +37,7 @@ echo "wake up"
 /sbin/m5 resetstats
 
 TBENCH_QPS_ROI=1200 TBENCH_QPS_WARMUP=1200 TBENCH_SERVER=10.0.0.1 \
-	chrt -r 99 ./mttest_client_networked
+	./mttest_client_networked
 
 echo "Done: copying results..."
 /sbin/m5 writefile lats.bin
