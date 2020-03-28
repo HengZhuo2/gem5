@@ -94,38 +94,3 @@ getenv = true
 Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
-executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/900/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-900
-initialdir = /research/hzhuo2/gem5-tail-condor/
-output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/900/condor_out
-error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/900/condor_err
-log = /research/hzhuo2/gem5-tail-condor/m5out/masstree/900/condor_log
-Rank=TARGET.Mips
-universe = vanilla
-getenv = true
-Requirements = (regexp("opteron-5.*", Machine)==FALSE)
-queue
-
-executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1000
-initialdir = /research/hzhuo2/gem5-tail-condor/
-output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/condor_out
-error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/condor_err
-log = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/condor_log
-Rank=TARGET.Mips
-universe = vanilla
-getenv = true
-Requirements = (regexp("opteron-5.*", Machine)==FALSE)
-queue
-
-executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/1200/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1200
-initialdir = /research/hzhuo2/gem5-tail-condor/
-output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1200/condor_out
-error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1200/condor_err
-log = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1200/condor_log
-Rank=TARGET.Mips
-universe = vanilla
-getenv = true
-Requirements = (regexp("opteron-5.*", Machine)==FALSE)
-queue

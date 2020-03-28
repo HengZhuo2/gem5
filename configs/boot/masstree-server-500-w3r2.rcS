@@ -4,7 +4,7 @@ CLIENT=10.0.0.2
 
 echo "setting up network..."
 ifconfig lo 127.0.0.1
-ifconfig eth0 $CLIENT txqueuelen 1000
+ifconfig eth0 $SERVER txqueuelen 1000
 
 echo "0" > /proc/sys/net/ipv4/tcp_timestamps
 echo "0" > /proc/sys/net/ipv4/tcp_sack
@@ -22,24 +22,15 @@ echo "100000" > /proc/sys/net/core/netdev_max_backlog
 /sbin/m5 dumpstats
 /sbin/m5 resetstats
 
-echo -n "waiting for server..."
-netcat -c -l -p 8080
+echo -n "signal client to begin..."
+echo "server ready" | netcat -c $CLIENT 8080
 
 cd /tailbench/masstree-tail
-echo "at masstree-tail dir..."
-# ./run_client.sh 1000
-echo "starting masstree client run ...."
-sleep 5
-echo "wake up"
+echo "run masstree server..."
 
-/sbin/m5 checkpoint
-/sbin/m5 dumpstats
-/sbin/m5 resetstats
+TBENCH_MAXREQS=1000 TBENCH_WARMUPREQS=1800 TBENCH_SERVER=10.0.0.1 \
+	./mttest_server_networked -j4 mycsba masstree
 
-TBENCH_QPS_ROI=1200 TBENCH_QPS_WARMUP=1200 TBENCH_SERVER=10.0.0.1 \
-	./mttest_client_networked
 
-echo "Done: copying results..."
-/sbin/m5 writefile lats.bin
-echo "finishing masstree.done...shuting down..."
-/sbin/m5 exit
+echo "done."
+exec /bin/bash
