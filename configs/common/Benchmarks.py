@@ -191,6 +191,17 @@ Benchmarks = {
                          SysConfig('sphinx-client-1.0.rcS','2048MB',
                                    'aarch64-trusty-tail-sphinx.img')],
 
+    'masstree-local-100':[SysConfig('masstree-local-100.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img')],
+    'masstree-local-200':[SysConfig('masstree-local-200.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img')],
+    'masstree-local-400':[SysConfig('masstree-local-400.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img')],
+    'masstree-local-600':[SysConfig('masstree-local-600.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img')],
+    'masstree-local-800':[SysConfig('masstree-local-800.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img')],
+
     'tail-masstree-100':[SysConfig('masstree-server-100.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
                          SysConfig('masstree-client-100.rcS','2048MB',
