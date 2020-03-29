@@ -1,4 +1,3 @@
-ls
 echo "setting up network..."
 ifconfig lo 127.0.0.1
 
@@ -24,4 +23,32 @@ echo "524287" > /proc/sys/net/core/optmem_max
 echo "300000" > /proc/sys/net/core/netdev_max_backlog
 echo "done."
 
-exec /bin/bash
+/sbin/m5 checkpoint
+/sbin/m5 dumpstats
+/sbin/m5 resetstats
+
+cd /tailbench/masstree-tail
+echo "at masstree-tail dir..."
+echo "starting masstree server ...."
+
+TBENCH_MAXREQS=3600 TBENCH_WARMUPREQS=600 \
+    ./mttest_server_networked -j4 mycsba masstree &
+echo $! > server.pid
+
+sleep 5
+echo "starting masstree client ...."
+
+/sbin/m5 checkpoint
+/sbin/m5 dumpstats
+/sbin/m5 resetstats
+
+TBENCH_QPS_WARMUP=600 TBENCH_QPS_ROI=600 TBENCH_MINSLEEPNS=10000 \
+    ./mttest_client_networked &
+echo $! > client.pid
+
+wait $(cat client.pid)
+echo "Done: copying results..."
+/sbin/m5 writefile lats.bin
+
+echo "finishing masstree.done...shuting down..."
+/sbin/m5 exit
