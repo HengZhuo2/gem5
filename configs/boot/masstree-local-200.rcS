@@ -31,7 +31,7 @@ cd /tailbench/masstree-tail
 echo "at masstree-tail dir..."
 echo "starting masstree server ...."
 
-TBENCH_MAXREQS=1200 TBENCH_WARMUPREQS=200 \
+TBENCH_MAXREQS=1200 TBENCH_WARMUPREQS=200 TBENCH_SERVER=127.0.0.1 \
     ./mttest_server_networked -j4 mycsba masstree &
 echo $! > server.pid
 
@@ -43,7 +43,7 @@ echo "starting masstree client ...."
 /sbin/m5 resetstats
 
 TBENCH_QPS_WARMUP=200 TBENCH_QPS_ROI=200 TBENCH_MINSLEEPNS=10000 \
-    ./mttest_client_networked &
+    TBENCH_SERVER=127.0.0.1 ./mttest_client_networked &
 echo $! > client.pid
 
 wait $(cat client.pid)
