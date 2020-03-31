@@ -211,6 +211,25 @@ Benchmarks = {
     'imgdnn-local-50' :[SysConfig('imgdnn-local-50.rcS','2048MB',
                                     'aarch64-trusty-tail-imgdnn.img')],
 
+    'tail-imgdnn-100':[SysConfig('imgdnn-server-100.rcS','2048MB',
+                                    'aarch64-trusty-tail-imgdnn.img'),
+                       SysConfig('imgdnn-client-100.rcS','2048MB',
+                                   'aarch64-trusty-tail-imgdnn.img')],
+    'tail-imgdnn-200':[SysConfig('imgdnn-server-200.rcS','2048MB',
+                                    'aarch64-trusty-tail-imgdnn.img'),
+                       SysConfig('imgdnn-client-200.rcS','2048MB',
+                                   'aarch64-trusty-tail-imgdnn.img')],
+    'tail-imgdnn-400':[SysConfig('imgdnn-server-400.rcS','2048MB',
+                                    'aarch64-trusty-tail-imgdnn.img'),
+                       SysConfig('imgdnn-client-400.rcS','2048MB',
+                                   'aarch64-trusty-tail-imgdnn.img')],
+    'tail-imgdnn-50': [SysConfig('imgdnn-server-50.rcS','2048MB',
+                                    'aarch64-trusty-tail-imgdnn.img'),
+                       SysConfig('imgdnn-client-50.rcS','2048MB',
+                                   'aarch64-trusty-tail-imgdnn.img')],
+
+
+
     'tail-masstree-100':[SysConfig('masstree-server-100.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
                          SysConfig('masstree-client-100.rcS','2048MB',
