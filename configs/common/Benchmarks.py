@@ -228,7 +228,21 @@ Benchmarks = {
                        SysConfig('imgdnn-client-50.rcS','2048MB',
                                    'aarch64-trusty-tail-imgdnn.img')],
 
-
+    'tail-masstree-2':[SysConfig('masstree-server-2.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img'),
+                         SysConfig('masstree-client-2.rcS','2048MB',
+                                   'aarch64-trusty-tail-masstree.img')],
+    'tail-masstree-10':[SysConfig('masstree-server-10.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img'),
+                         SysConfig('masstree-client-10.rcS','2048MB',
+                                   'aarch64-trusty-tail-masstree.img')],
+    'tail-masstree-20':[SysConfig('masstree-server-20.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img'),
+                         SysConfig('masstree-client-20.rcS','2048MB',
+                                   'aarch64-trusty-tail-masstree.img')],
+    'tail-masstree-40':[SysConfig('masstree-server-40.rcS','2048MB',
+                                    'aarch64-trusty-tail-masstree.img'),
+                         SysConfig('masstree-client-40.rcS','2048MB',
 
     'tail-masstree-100':[SysConfig('masstree-server-100.rcS','2048MB',
                                     'aarch64-trusty-tail-masstree.img'),
