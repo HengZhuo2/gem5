@@ -45,7 +45,7 @@ echo "starting img-dnn client ...."
 
 TBENCH_QPS_ROI=200 TBENCH_QPS_WARMUP=200 TBENCH_SERVER=10.0.0.1 \
 	TBENCH_MNIST_DIR=/tailbench/data/img-dnn/mnist \
-	./img-dnn_client_networked &
+	./img-dnn_client_networked
 
 echo "Done: copying results..."
 /sbin/m5 writefile lats.bin

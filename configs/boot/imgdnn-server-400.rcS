@@ -39,7 +39,7 @@ echo "starting img-dnn server ...."
 
 TBENCH_WARMUPREQS=400 TBENCH_MAXREQS=3600 TBENCH_SERVER=10.0.0.1 \
 	./img-dnn_server_networked -r 4 -f \
-	/tailbench/data/img-dnn/models/model.xml -n 100000000 &
+	/tailbench/data/img-dnn/models/model.xml -n 100000000
 
 echo "done."
 exec /bin/bash
