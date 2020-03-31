@@ -1,7 +1,11 @@
+#!/bin/sh
+SERVER=10.0.0.1
+CLIENT=10.0.0.2
+
 echo "setting up network..."
 ifconfig lo 127.0.0.1
+ifconfig eth0 $SERVER txqueuelen 1000
 
-#!/bin/sh
 echo "1" > /proc/sys/net/ipv4/tcp_tw_recycle
 echo "1" > /proc/sys/net/ipv4/tcp_tw_reuse
 echo "1" > /proc/sys/net/ipv4/tcp_window_scaling
@@ -27,32 +31,15 @@ echo "done."
 /sbin/m5 dumpstats
 /sbin/m5 resetstats
 
+echo -n "signal client to begin..."
+echo "server ready" | netcat -c $CLIENT 8080
+
 cd /tailbench/img-dnn
-echo "at img-dnn-tail dir..."
 echo "starting img-dnn server ...."
 
-TBENCH_WARMUPREQS=400 TBENCH_MAXREQS=3600 TBENCH_SERVER=127.0.0.1 \
+TBENCH_WARMUPREQS=50 TBENCH_MAXREQS=450 TBENCH_SERVER=10.0.0.1 \
 	./img-dnn_server_networked -r 4 -f \
 	/tailbench/data/img-dnn/models/model.xml -n 100000000 &
 
-echo $! > server.pid
-
-sleep 5
-echo "starting img-dnn client ...."
-
-/sbin/m5 checkpoint
-/sbin/m5 dumpstats
-/sbin/m5 resetstats
-
-TBENCH_QPS_ROI=400 TBENCH_QPS_WARMUP=400 TBENCH_SERVER=127.0.0.1 \
-	TBENCH_MNIST_DIR=/tailbench/data/img-dnn/mnist \
-	./img-dnn_client_networked &
-
-echo $! > client.pid
-
-wait $(cat client.pid)
-echo "Done: copying results..."
-/sbin/m5 writefile lats.bin
-
-echo "finishing img-dnn.done...shuting down..."
-/sbin/m5 exit
+echo "done."
+exec /bin/bash
