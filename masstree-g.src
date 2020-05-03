@@ -1,5 +1,5 @@
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-500 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-500 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/500/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/500/condor_err
@@ -11,7 +11,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1000 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1000 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1000/condor_err
@@ -23,7 +23,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/1500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1500 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/1500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-1500 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1500/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/1500/condor_err
@@ -35,7 +35,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/2000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2000 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/2000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2000 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/2000/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/2000/condor_err
@@ -47,7 +47,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/2500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2500 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/2500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-2500 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/2500/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/2500/condor_err
@@ -59,7 +59,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-3000 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/3000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-3000 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/3000/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/3000/condor_err
@@ -71,7 +71,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/3500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-3500 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/3500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-3500 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/3500/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/3500/condor_err
@@ -83,7 +83,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/4000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-4000 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/4000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-4000 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/4000/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/4000/condor_err
@@ -95,7 +95,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/4500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-4500 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/4500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-4500 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/4500/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/4500/condor_err
@@ -107,7 +107,7 @@ Requirements = (regexp("opteron-5.*", Machine)==FALSE)
 queue
 
 executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5.opt
-arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/5000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-5000 
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/masstree/5000/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=AtomicSimpleCPU --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-masstree-5000 --take-checkpoint=13000000000000,1000000000000 -r 3
 initialdir = /research/hzhuo2/gem5-tail-condor/
 output = /research/hzhuo2/gem5-tail-condor/m5out/masstree/5000/condor_out
 error = /research/hzhuo2/gem5-tail-condor/m5out/masstree/5000/condor_err
