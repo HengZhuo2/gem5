@@ -37,7 +37,7 @@ echo "server ready" | netcat -c $CLIENT 8080
 cd /tailbench/img-dnn
 echo "starting img-dnn server ...."
 
-TBENCH_WARMUPREQS=800 TBENCH_MAXREQS=1600 TBENCH_SERVER=10.0.0.1 \
+TBENCH_WARMUPREQS=600 TBENCH_MAXREQS=1200 TBENCH_SERVER=10.0.0.1 \
 	./img-dnn_server_networked -r 4 -f \
 	/tailbench/data/img-dnn/models/model.xml -n 100000000
 
