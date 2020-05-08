@@ -43,6 +43,8 @@ echo "starting img-dnn client ...."
 /sbin/m5 dumpstats
 /sbin/m5 resetstats
 
+rm lats.*
+
 TBENCH_QPS_ROI=600 TBENCH_QPS_WARMUP=600 TBENCH_SERVER=10.0.0.1 \
 	TBENCH_MNIST_DIR=/tailbench/data/img-dnn/mnist \
 	./img-dnn_client_networked
