@@ -45,6 +45,8 @@ echo "wake up"
 /sbin/m5 dumpstats
 /sbin/m5 resetstats
 
+rm lats.*
+
 TBENCH_QPS_ROI=1000 TBENCH_QPS_WARMUP=1000 TBENCH_SERVER=10.0.0.1 \
 	./mttest_client_networked
 
