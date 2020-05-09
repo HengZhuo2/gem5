@@ -1,0 +1,107 @@
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/50/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-50 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/50/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/50/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/50/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/100/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-100 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/100/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/100/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/100/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/200/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-200 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/200/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/200/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/200/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/300/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-300 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/300/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/300/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/300/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/400/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-400 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/400/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/400/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/400/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/500/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-500 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/500/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/500/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/500/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/600/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-600 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/600/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/600/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/600/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/700/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-700 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/700/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/700/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/700/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
+
+executable = /research/hzhuo2/gem5-tail-condor/build/ARM/gem5-native.opt
+arguments = --outdir=/research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/800/ configs/example/fs.py --machine-type=VExpress_EMM64 --cpu-type=HPI --num-cpus=4 --cpu-clock=2GHz --sys-clock=2GHz --kernel=/research/hzhuo2/gem5-tail/images/arm2018/binaries/vmlinux.vexpress_emm64 --dtb-filename=/research/hzhuo2/gem5-tail/images/arm2018/binaries/armv8_gem5_v1_4cpu.dtb -b tail-imgdnn-800 --caches --l2cache --l1i_size=32kB -r 4 
+initialdir = /research/hzhuo2/gem5-tail-condor/
+output = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/800/condor_out
+error = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/800/condor_err
+log = /research/hzhuo2/gem5-tail-condor/m5out/imgdnn-native-run/800/condor_log
+Rank=TARGET.Mips
+universe = vanilla
+getenv = true
+Requirements = (regexp("opteron-5.*", Machine)==FALSE)
+queue
