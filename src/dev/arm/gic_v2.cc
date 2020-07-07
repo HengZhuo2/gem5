@@ -343,7 +343,9 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
                 uint32_t int_num = 1 << (cpuHighestInt[ctx] - SGI_MAX);
                 cpuPpiActive[ctx] |= int_num;
                 updateRunPri();
-                cpuPpiPending[ctx] &= ~int_num;
+                if (!isLevelSensitive(ctx, active_int)) {
+                    cpuPpiPending[ctx] &= ~int_num;
+                }
 
             } else {
                 uint32_t int_num = 1 << intNumToBit(cpuHighestInt[ctx]);
@@ -529,7 +531,10 @@ GicV2::writeDistributor(ContextID ctx, Addr daddr, uint32_t data,
 
     if (GICD_ICFGR.contains(daddr)) {
         uint32_t ix = (daddr - GICD_ICFGR.start()) >> 2;
-        getIntConfig(ctx, ix) = data;
+        // Since the GICD_ICFGR0 is RO (WI), we are discarding the write
+        // if ix = 0
+        if (ix != 0)
+            getIntConfig(ctx, ix) = data;
         if (data & NN_CONFIG_MASK)
             warn("GIC N:N mode selected and not supported at this time\n");
         return;
@@ -919,10 +924,16 @@ GicV2::clearInt(uint32_t num)
 void
 GicV2::clearPPInt(uint32_t num, uint32_t cpu)
 {
-    DPRINTF(Interrupt, "Clearing PPI %d, cpuTarget %#x: \n",
-            num, cpu);
-    cpuPpiPending[cpu] &= ~(1 << (num - SGI_MAX));
-    updateIntState(intNumToWord(num));
+    if (isLevelSensitive(cpu, num)) {
+        DPRINTF(Interrupt, "Clearing PPI %d, cpuTarget %#x: \n",
+                num, cpu);
+        cpuPpiPending[cpu] &= ~(1 << (num - SGI_MAX));
+        updateIntState(intNumToWord(num));
+    } else {
+        /* Nothing to do :
+         * Edge-triggered interrupt remain pending until software
+         * writes GICD_ICPENDR or reads GICC_IAR */
+    }
 }
 
 void
@@ -1011,7 +1022,7 @@ GicV2::serialize(CheckpointOut &cp) const
     SERIALIZE_ARRAY(iccrpr, CPU_MAX);
     SERIALIZE_ARRAY(intPriority, GLOBAL_INT_LINES);
     SERIALIZE_ARRAY(cpuTarget, GLOBAL_INT_LINES);
-    SERIALIZE_ARRAY(intConfig, INT_BITS_MAX * 2);
+    SERIALIZE_ARRAY(intConfig, INT_BITS_MAX * 2 - 2);
     SERIALIZE_ARRAY(cpuControl, CPU_MAX);
     SERIALIZE_ARRAY(cpuPriority, CPU_MAX);
     SERIALIZE_ARRAY(cpuBpr, CPU_MAX);
@@ -1038,6 +1049,7 @@ GicV2::BankedRegs::serialize(CheckpointOut &cp) const
     SERIALIZE_SCALAR(pendingInt);
     SERIALIZE_SCALAR(activeInt);
     SERIALIZE_SCALAR(intGroup);
+    SERIALIZE_ARRAY(intConfig, 2);
     SERIALIZE_ARRAY(intPriority, SGI_MAX + PPI_MAX);
 }
 
@@ -1055,7 +1067,7 @@ GicV2::unserialize(CheckpointIn &cp)
     UNSERIALIZE_ARRAY(iccrpr, CPU_MAX);
     UNSERIALIZE_ARRAY(intPriority, GLOBAL_INT_LINES);
     UNSERIALIZE_ARRAY(cpuTarget, GLOBAL_INT_LINES);
-    UNSERIALIZE_ARRAY(intConfig, INT_BITS_MAX * 2);
+    UNSERIALIZE_ARRAY(intConfig, INT_BITS_MAX * 2 - 2);
     UNSERIALIZE_ARRAY(cpuControl, CPU_MAX);
     UNSERIALIZE_ARRAY(cpuPriority, CPU_MAX);
     UNSERIALIZE_ARRAY(cpuBpr, CPU_MAX);
@@ -1097,6 +1109,7 @@ GicV2::BankedRegs::unserialize(CheckpointIn &cp)
     UNSERIALIZE_SCALAR(pendingInt);
     UNSERIALIZE_SCALAR(activeInt);
     UNSERIALIZE_SCALAR(intGroup);
+    UNSERIALIZE_ARRAY(intConfig, 2);
     UNSERIALIZE_ARRAY(intPriority, SGI_MAX + PPI_MAX);
 }
 
