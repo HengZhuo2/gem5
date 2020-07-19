@@ -45,7 +45,8 @@ MessageBuffer::MessageBuffer(const Params *p)
     m_max_size(p->buffer_size), m_time_last_time_size_checked(0),
     m_time_last_time_enqueue(0), m_time_last_time_pop(0),
     m_last_arrival_time(0), m_strict_fifo(p->ordered),
-    m_randomization(p->randomization)
+    m_randomization(p->randomization),
+    m_randseed(p->rand_seed)
 {
     m_msg_counter = 0;
     m_consumer = NULL;
@@ -63,6 +64,8 @@ MessageBuffer::MessageBuffer(const Params *p)
     m_stall_time = 0;
 
     m_dequeue_callback = nullptr;
+
+    random_rng.init(m_randseed); //by Heng
 }
 
 unsigned int
@@ -136,12 +139,12 @@ MessageBuffer::peek() const
 
 // FIXME - move me somewhere else
 Tick
-random_time()
+MessageBuffer::random_time()
 {
     Tick time = 1;
-    time += random_mt.random(0, 3);  // [0...3]
-    if (random_mt.random(0, 7) == 0) {  // 1 in 8 chance
-        time += 100 + random_mt.random(1, 15); // 100 + [1...15]
+    time += random_rng.random(0, 3);  // [0...3]
+    if (random_rng.random(0, 7) == 0) {  // 1 in 8 chance
+        time += 100 + random_rng.random(1, 15); // 100 + [1...15]
     }
     return time;
 }
@@ -178,6 +181,9 @@ MessageBuffer::enqueue(MsgPtr message, Tick current_time, Tick delta)
         } else {
             arrival_time = current_time + random_time();
         }
+        DPRINTF(RubyQueue, "Enqueue arrival_time: %lld,"
+                " from current_time: %lld\n",
+                arrival_time, current_time);
     }
 
     // Check the arrival time

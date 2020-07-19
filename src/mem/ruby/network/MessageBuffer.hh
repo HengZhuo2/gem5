@@ -41,6 +41,7 @@
 #include <string>
 #include <vector>
 
+#include "base/random.hh"
 #include "base/trace.hh"
 #include "debug/RubyQueue.hh"
 #include "mem/packet.hh"
@@ -209,9 +210,13 @@ class MessageBuffer : public SimObject
     Stats::Average m_stall_time;
     Stats::Scalar m_stall_count;
     Stats::Formula m_occupancy;
+
+    unsigned int m_randseed; //by Heng
+    Random random_rng;
+    Tick random_time();
 };
 
-Tick random_time();
+// Tick random_time();
 
 inline std::ostream&
 operator<<(std::ostream& out, const MessageBuffer& obj)
