@@ -23,23 +23,21 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# Authors: Ali Saidi
 
 from __future__ import print_function
 from __future__ import absolute_import
 
-from .SysPaths import script, disk, binary
+from common.SysPaths import script, disk, binary
 from os import environ as env
 from m5.defines import buildEnv
 
 disk_path = '/research/hzhuo2/gem5-tail/images/arm2018/disks/'
 
 class SysConfig:
-    def __init__(self, script=None, mem=None, disk=None, rootdev=None,
+    def __init__(self, script=None, mem=None, disks=None, rootdev=None,
                  os_type='linux'):
         self.scriptname = script
-        self.diskname = disk
+        self.disknames = disks
         self.memsize = mem
         self.root = rootdev
         self.ostype = os_type
@@ -56,23 +54,11 @@ class SysConfig:
         else:
             return '128MB'
 
-    def disk(self):
-        if self.diskname:
-            return disk(disk_path+self.diskname)
-        elif buildEnv['TARGET_ISA'] == 'alpha':
-            return env.get('LINUX_IMAGE', disk('linux-latest.img'))
-        elif buildEnv['TARGET_ISA'] == 'x86':
-            return env.get('LINUX_IMAGE', disk('x86root.img'))
-        elif buildEnv['TARGET_ISA'] == 'arm':
-            #return env.get('LINUX_IMAGE', disk('linux-aarch32-ael.img'))
-            return env.get('LINUX_IMAGE',
-                disk('aarch64-ubuntu-trusty-headless.img'))
-        elif buildEnv['TARGET_ISA'] == 'sparc':
-            return env.get('LINUX_IMAGE', disk('disk.s10hw2'))
+    def disks(self):
+        if self.disknames:
+            return [disk(diskname) for diskname in self.disknames]
         else:
-            print("Don't know what default disk image to use for %s ISA" %
-                buildEnv['TARGET_ISA'])
-            exit(1)
+            return []
 
     def rootdev(self):
         if self.root:
@@ -141,17 +127,18 @@ Benchmarks = {
 
     'MutexTest':        [SysConfig('mutex-test.rcS', '128MB')],
     'ArmAndroid-GB':    [SysConfig('null.rcS', '256MB',
-                    'ARMv7a-Gingerbread-Android.SMP.mouse.nolock.clean.img',
+                    ['ARMv7a-Gingerbread-Android.SMP.mouse.nolock.clean.img'],
                     None, 'android-gingerbread')],
-    'bbench-gb':        [SysConfig('bbench-gb.rcS', '256MB',
-                            'ARMv7a-Gingerbread-Android.SMP.mouse.nolock.img',
+    'bbench-gb': [SysConfig('bbench-gb.rcS', '256MB',
+                        ['ARMv7a-Gingerbread-Android.SMP.mouse.nolock.img'],
                             None, 'android-gingerbread')],
     'ArmAndroid-ICS':   [SysConfig('null.rcS', '256MB',
-                            'ARMv7a-ICS-Android.SMP.nolock.clean.img',
+                            ['ARMv7a-ICS-Android.SMP.nolock.clean.img'],
                             None, 'android-ics')],
     'bbench-ics':       [SysConfig('bbench-ics.rcS', '256MB',
-                            'ARMv7a-ICS-Android.SMP.nolock.img',
+                            ['ARMv7a-ICS-Android.SMP.nolock.img'],
                             None, 'android-ics')],
+
     'basic-ls':         [SysConfig('ls.rcS', '256MB',
                         'aarch64-ubuntu-trusty-headless.img')],
     'tail-sphinx':      [SysConfig('tail-sphinx-server.rcS','2048MB',
