@@ -1,4 +1,16 @@
 /*
+ * Copyright (c) 2019 ARM Limited
+ * All rights reserved.
+ *
+ * The license below extends only to copyright in the software and shall
+ * not be construed as granting a license to any other intellectual
+ * property including but not limited to intellectual property relating
+ * to a hardware implementation of the functionality of the software
+ * licensed hereunder.  You may use the software subject to the license
+ * terms below provided that you ensure that this notice is replicated
+ * unmodified and in its entirety in all distributions of the software,
+ * modified or unmodified, in source code or in binary form.
+ *
  * Copyright (c) 1999-2008 Mark D. Hill and David A. Wood
  * All rights reserved.
  *
@@ -45,8 +57,7 @@ MessageBuffer::MessageBuffer(const Params *p)
     m_max_size(p->buffer_size), m_time_last_time_size_checked(0),
     m_time_last_time_enqueue(0), m_time_last_time_pop(0),
     m_last_arrival_time(0), m_strict_fifo(p->ordered),
-    m_randomization(p->randomization),
-    m_randseed(p->rand_seed)
+    m_randomization(p->randomization)
 {
     m_msg_counter = 0;
     m_consumer = NULL;
@@ -64,8 +75,6 @@ MessageBuffer::MessageBuffer(const Params *p)
     m_stall_time = 0;
 
     m_dequeue_callback = nullptr;
-
-    random_rng.init(m_randseed); //by Heng
 }
 
 unsigned int
@@ -139,12 +148,12 @@ MessageBuffer::peek() const
 
 // FIXME - move me somewhere else
 Tick
-MessageBuffer::random_time()
+random_time()
 {
     Tick time = 1;
-    time += random_rng.random(0, 3);  // [0...3]
-    if (random_rng.random(0, 7) == 0) {  // 1 in 8 chance
-        time += 100 + random_rng.random(1, 15); // 100 + [1...15]
+    time += random_mt.random(0, 3);  // [0...3]
+    if (random_mt.random(0, 7) == 0) {  // 1 in 8 chance
+        time += 100 + random_mt.random(1, 15); // 100 + [1...15]
     }
     return time;
 }
@@ -181,9 +190,6 @@ MessageBuffer::enqueue(MsgPtr message, Tick current_time, Tick delta)
         } else {
             arrival_time = current_time + random_time();
         }
-        DPRINTF(RubyQueue, "Enqueue arrival_time: %lld,"
-                " from current_time: %lld\n",
-                arrival_time, current_time);
     }
 
     // Check the arrival time
@@ -444,17 +450,21 @@ MessageBuffer::regStats()
 }
 
 uint32_t
-MessageBuffer::functionalWrite(Packet *pkt)
+MessageBuffer::functionalAccess(Packet *pkt, bool is_read)
 {
-    uint32_t num_functional_writes = 0;
+    DPRINTF(RubyQueue, "functional %s for %#x\n",
+            is_read ? "read" : "write", pkt->getAddr());
+
+    uint32_t num_functional_accesses = 0;
 
     // Check the priority heap and write any messages that may
     // correspond to the address in the packet.
     for (unsigned int i = 0; i < m_prio_heap.size(); ++i) {
         Message *msg = m_prio_heap[i].get();
-        if (msg->functionalWrite(pkt)) {
-            num_functional_writes++;
-        }
+        if (is_read && msg->functionalRead(pkt))
+            return 1;
+        else if (!is_read && msg->functionalWrite(pkt))
+            num_functional_accesses++;
     }
 
     // Check the stall queue and write any messages that may
@@ -467,13 +477,14 @@ MessageBuffer::functionalWrite(Packet *pkt)
             it != (map_iter->second).end(); ++it) {
 
             Message *msg = (*it).get();
-            if (msg->functionalWrite(pkt)) {
-                num_functional_writes++;
-            }
+            if (is_read && msg->functionalRead(pkt))
+                return 1;
+            else if (!is_read && msg->functionalWrite(pkt))
+                num_functional_accesses++;
         }
     }
 
-    return num_functional_writes;
+    return num_functional_accesses;
 }
 
 MessageBuffer *
