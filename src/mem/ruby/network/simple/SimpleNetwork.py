@@ -40,20 +40,15 @@ class SimpleNetwork(RubyNetwork):
     adaptive_routing = Param.Bool(False, "enable adaptive routing");
     int_link_buffers = VectorParam.MessageBuffer("Buffers for int_links")
 
-#     def setup_buffers(self):
-    def setup_buffers(self, buffer_rng_seed):
+    def setup_buffers(self):
         # Note that all SimpleNetwork MessageBuffers are currently ordered
         network_buffers = []
         for link in self.int_links:
             # The network needs number_of_virtual_networks buffers per
             # int_link port
             for i in range(int(self.number_of_virtual_networks)):
-                network_buffers.append(MessageBuffer(ordered = True,
-                                            randomization = True,
-                                            rand_seed=buffer_rng_seed))
-                network_buffers.append(MessageBuffer(ordered = True,
-                                            randomization = True,
-                                            rand_seed=buffer_rng_seed))
+                network_buffers.append(MessageBuffer(ordered = True))
+                network_buffers.append(MessageBuffer(ordered = True))
         self.int_link_buffers = network_buffers
 
         # Also add buffers for all router-link connections
@@ -64,18 +59,14 @@ class SimpleNetwork(RubyNetwork):
             for link in self.int_links:
                 if link.dst_node == router:
                     for i in range(int(self.number_of_virtual_networks)):
-                        router_buffers.append(MessageBuffer(ordered = True,
-                                                randomization = True,
-                                                rand_seed=buffer_rng_seed))
+                        router_buffers.append(MessageBuffer(ordered = True))
 
             # Add message buffers to routers for each external link connection
             for link in self.ext_links:
                 # Routers can only be int_nodes on ext_links
                 if link.int_node in self.routers:
                     for i in range(int(self.number_of_virtual_networks)):
-                        router_buffers.append(MessageBuffer(ordered = True,
-                                                randomization = True,
-                                                rand_seed=buffer_rng_seed))
+                        router_buffers.append(MessageBuffer(ordered = True))
             router.port_buffers = router_buffers
 
 class Switch(BasicRouter):
