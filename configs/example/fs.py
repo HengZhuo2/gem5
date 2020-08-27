@@ -66,6 +66,9 @@ from common import ObjectList
 from common.Caches import *
 from common import Options
 
+sys.path.append('/research/hzhuo2/condor-rundata/gem5-tail/boot/')
+from benchlist import tailBenchs
+
 def cmd_line_template():
     if options.command_line and options.command_line_file:
         print("Error: --command-line and --command-line-file are "
@@ -319,6 +322,7 @@ TestMemClass = Simulation.setMemClass(options)
 
 if options.benchmark:
     try:
+        Benchmarks.update(tailBenchs) # add Tail Latency Defined Benchmark
         bm = Benchmarks[options.benchmark]
     except KeyError:
         print("Error benchmark %s has not been defined." % options.benchmark)
