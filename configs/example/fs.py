@@ -66,7 +66,8 @@ from common import ObjectList
 from common.Caches import *
 from common import Options
 
-sys.path.append('/research/hzhuo2/condor-rundata/gem5-tail/boot/')
+
+sys.path.append('/research/hzhuo2/condor-rundata/gem5-tail/boot-base/')
 from benchlist import tailBenchs
 
 def cmd_line_template():
@@ -255,7 +256,8 @@ def build_drive_system(np):
                                        cmdline=cmdline)
     elif buildEnv['TARGET_ISA'] == 'arm':
         drive_sys = makeArmSystem(drive_mem_mode, options.machine_type, np,
-                                  bm[1], options.dtb_filename, cmdline=cmdline)
+                                  bm[1], options.dtb_filename, cmdline=cmdline,
+                                  bootloader=options.bootloader)
 
     # Create a top-level voltage domain
     drive_sys.voltage_domain = VoltageDomain(voltage = options.sys_voltage)

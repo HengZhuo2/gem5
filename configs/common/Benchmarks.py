@@ -42,6 +42,7 @@ class SysConfig:
 
     def script(self):
         if self.scriptname:
+            print("using script:",self.scriptname)
             return script(self.scriptname)
         else:
             return ''
