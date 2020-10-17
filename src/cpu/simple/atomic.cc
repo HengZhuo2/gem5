@@ -157,7 +157,7 @@ AtomicSimpleCPU::drainResume()
 
     for (ThreadID tid = 0; tid < numThreads; tid++) {
         if (threadInfo[tid]->thread->status() == ThreadContext::Active) {
-            threadInfo[tid]->notIdleFraction = 1;
+            threadInfo[tid]->execContextStats.notIdleFraction = 1;
             activeThreads.push_back(tid);
             _status = BaseSimpleCPU::Running;
 
@@ -166,7 +166,7 @@ AtomicSimpleCPU::drainResume()
                 schedule(tickEvent, nextCycle());
             }
         } else {
-            threadInfo[tid]->notIdleFraction = 0;
+            threadInfo[tid]->execContextStats.notIdleFraction = 0;
         }
     }
 
@@ -226,7 +226,7 @@ AtomicSimpleCPU::activateContext(ThreadID thread_num)
 
     assert(thread_num < numThreads);
 
-    threadInfo[thread_num]->notIdleFraction = 1;
+    threadInfo[thread_num]->execContextStats.notIdleFraction = 1;
     Cycles delta = ticksToCycles(threadInfo[thread_num]->thread->lastActivate -
                                  threadInfo[thread_num]->thread->lastSuspend);
     numCycles += delta;
@@ -258,7 +258,7 @@ AtomicSimpleCPU::suspendContext(ThreadID thread_num)
 
     assert(_status == BaseSimpleCPU::Running);
 
-    threadInfo[thread_num]->notIdleFraction = 0;
+    threadInfo[thread_num]->execContextStats.notIdleFraction = 0;
 
     if (activeThreads.empty()) {
         _status = Idle;
