@@ -773,13 +773,3 @@ AtomicSimpleCPU::printAddr(Addr a)
 {
     dcachePort.printAddr(a);
 }
-
-////////////////////////////////////////////////////////////////////////
-//
-//  AtomicSimpleCPU Simulation Object
-//
-AtomicSimpleCPU *
-AtomicSimpleCPUParams::create() const
-{
-    return new AtomicSimpleCPU(*this);
-}
