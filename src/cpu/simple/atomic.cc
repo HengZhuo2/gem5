@@ -203,9 +203,9 @@ AtomicSimpleCPU::switchOut()
 
 
 void
-AtomicSimpleCPU::takeOverFrom(BaseCPU *oldCPU)
+AtomicSimpleCPU::takeOverFrom(BaseCPU *old_cpu)
 {
-    BaseSimpleCPU::takeOverFrom(oldCPU);
+    BaseSimpleCPU::takeOverFrom(old_cpu);
 
     // The tick event should have been descheduled by drain()
     assert(!tickEvent.scheduled());
@@ -214,10 +214,9 @@ AtomicSimpleCPU::takeOverFrom(BaseCPU *oldCPU)
 void
 AtomicSimpleCPU::verifyMemoryMode() const
 {
-    if (!system->isAtomicMode()) {
-        fatal("The atomic CPU requires the memory system to be in "
-              "'atomic' mode.\n");
-    }
+    fatal_if(!system->isAtomicMode(),
+            "The atomic CPU requires the memory system to be in "
+              "'atomic' mode.");
 }
 
 void
@@ -237,8 +236,8 @@ AtomicSimpleCPU::activateContext(ThreadID thread_num)
         schedule(tickEvent, clockEdge(Cycles(0)));
     }
     _status = BaseSimpleCPU::Running;
-    if (std::find(activeThreads.begin(), activeThreads.end(), thread_num)
-        == activeThreads.end()) {
+    if (std::find(activeThreads.begin(), activeThreads.end(), thread_num) ==
+        activeThreads.end()) {
         activeThreads.push_back(thread_num);
     }
 
@@ -333,17 +332,17 @@ AtomicSimpleCPU::AtomicCPUDPort::recvFunctionalSnoop(PacketPtr pkt)
 }
 
 bool
-AtomicSimpleCPU::genMemFragmentRequest(const RequestPtr& req, Addr frag_addr,
+AtomicSimpleCPU::genMemFragmentRequest(const RequestPtr &req, Addr frag_addr,
                                        int size, Request::Flags flags,
-                                       const std::vector<bool>& byte_enable,
-                                       int& frag_size, int& size_left) const
+                                       const std::vector<bool> &byte_enable,
+                                       int &frag_size, int &size_left) const
 {
     bool predicate = true;
     Addr inst_addr = threadInfo[curThread]->thread->pcState().instAddr();
 
     frag_size = std::min(
         cacheLineSize() - addrBlockOffset(frag_addr, cacheLineSize()),
-        (Addr) size_left);
+        (Addr)size_left);
     size_left -= frag_size;
 
     // Set up byte-enable mask for the current fragment
@@ -361,12 +360,12 @@ AtomicSimpleCPU::genMemFragmentRequest(const RequestPtr& req, Addr frag_addr,
 }
 
 Fault
-AtomicSimpleCPU::readMem(Addr addr, uint8_t * data, unsigned size,
+AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
                          Request::Flags flags,
-                         const std::vector<bool>& byte_enable)
+                         const std::vector<bool> &byte_enable)
 {
-    SimpleExecContext& t_info = *threadInfo[curThread];
-    SimpleThread* thread = t_info.thread;
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread *thread = t_info.thread;
 
     // use the CPU's statically allocated read request and packet objects
     const RequestPtr &req = data_read_req;
@@ -415,13 +414,8 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t * data, unsigned size,
         }
 
         //If there's a fault, return it
-        if (fault != NoFault) {
-            if (req->isPrefetch()) {
-                return NoFault;
-            } else {
-                return fault;
-            }
-        }
+        if (fault != NoFault)
+            return req->isPrefetch() ? NoFault : fault;
 
         // If we don't need to access further cache lines, stop now.
         if (size_left == 0) {
@@ -447,8 +441,8 @@ AtomicSimpleCPU::writeMem(uint8_t *data, unsigned size, Addr addr,
                           Request::Flags flags, uint64_t *res,
                           const std::vector<bool>& byte_enable)
 {
-    SimpleExecContext& t_info = *threadInfo[curThread];
-    SimpleThread* thread = t_info.thread;
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread *thread = t_info.thread;
     static uint8_t zero_array[64] = {};
 
     if (data == NULL) {
@@ -530,18 +524,14 @@ AtomicSimpleCPU::writeMem(uint8_t *data, unsigned size, Addr addr,
 
         //If there's a fault or we don't need to access a second cache line,
         //stop now.
-        if (fault != NoFault || size_left == 0)
-        {
+        if (fault != NoFault || size_left == 0) {
             if (req->isLockedRMW() && fault == NoFault) {
                 assert(!req->isMasked());
                 locked = false;
             }
 
-            if (fault != NoFault && req->isPrefetch()) {
-                return NoFault;
-            } else {
-                return fault;
-            }
+            //Supress faults from prefetches.
+            return req->isPrefetch() ? NoFault : fault;
         }
 
         /*
@@ -560,8 +550,8 @@ Fault
 AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
                         Request::Flags flags, AtomicOpFunctorPtr amo_op)
 {
-    SimpleExecContext& t_info = *threadInfo[curThread];
-    SimpleThread* thread = t_info.thread;
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread *thread = t_info.thread;
 
     // use the CPU's statically allocated amo request and packet objects
     const RequestPtr &req = data_amo_req;
@@ -580,9 +570,8 @@ AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
     // accesses that cross cache-line boundaries, the cache needs to be
     // modified to support locking both cache lines to guarantee the
     // atomicity.
-    if (secondAddr > addr) {
-        panic("AMO request should not access across a cache line boundary\n");
-    }
+    panic_if(secondAddr > addr,
+        "AMO request should not access across a cache line boundary.");
 
     dcache_latency = 0;
 
@@ -601,9 +590,9 @@ AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
         Packet pkt(req, Packet::makeWriteCmd(req));
         pkt.dataStatic(data);
 
-        if (req->isLocalAccess())
+        if (req->isLocalAccess()) {
             dcache_latency += req->localAccessor(thread->getTC(), &pkt);
-        else {
+        } else {
             dcache_latency += sendPacket(dcachePort, &pkt);
         }
 
@@ -629,7 +618,7 @@ AtomicSimpleCPU::tick()
     // Change thread if multi-threaded
     swapActiveThread();
 
-    // Set memroy request ids to current thread
+    // Set memory request ids to current thread
     if (numThreads > 1) {
         ContextID cid = threadContexts[curThread]->contextId();
 
@@ -639,8 +628,8 @@ AtomicSimpleCPU::tick()
         data_amo_req->setContext(cid);
     }
 
-    SimpleExecContext& t_info = *threadInfo[curThread];
-    SimpleThread* thread = t_info.thread;
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread *thread = t_info.thread;
 
     Tick latency = 0;
 
@@ -693,8 +682,8 @@ AtomicSimpleCPU::tick()
 
                     assert(!ifetch_pkt.isError());
 
-                    // ifetch_req is initialized to read the instruction directly
-                    // into the CPU object's inst field.
+                    // ifetch_req is initialized to read the instruction
+                    // directly into the CPU object's inst field.
                 //}
             }
 
@@ -726,8 +715,9 @@ AtomicSimpleCPU::tick()
 
             // @todo remove me after debugging with legion done
             if (curStaticInst && (!curStaticInst->isMicroop() ||
-                        curStaticInst->isFirstMicroop()))
+                        curStaticInst->isFirstMicroop())) {
                 instCnt++;
+            }
 
             if (simulate_inst_stalls && icache_access)
                 stall_ticks += icache_latency;
