@@ -59,8 +59,6 @@
 #include "sim/full_system.hh"
 #include "sim/system.hh"
 
-using namespace TheISA;
-
 void
 AtomicSimpleCPU::init()
 {
