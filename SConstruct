@@ -135,7 +135,7 @@ import gem5_scons
 #
 ########################################################################
 
-main = Environment(tools=['default', 'git', TempFileSpawn])
+main = Environment(tools=['default', 'git'])
 
 from gem5_scons.util import get_termcap
 termcap = get_termcap()
