@@ -32,7 +32,7 @@
 #include "arch/riscv/faults.hh"
 
 #include "arch/riscv/isa.hh"
-#include "arch/riscv/registers.hh"
+#include "arch/riscv/regs/misc.hh"
 #include "arch/riscv/utility.hh"
 #include "cpu/base.hh"
 #include "cpu/thread_context.hh"
