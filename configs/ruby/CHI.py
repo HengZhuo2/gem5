@@ -54,7 +54,7 @@ def read_config_file(file):
     return chi_configs
 
 def create_system(options, full_system, system, dma_ports, bootmem,
-                  ruby_system):
+                  ruby_system, cpus):
 
     if buildEnv['PROTOCOL'] != 'CHI':
         m5.panic("This script requires the CHI build")
@@ -129,10 +129,10 @@ def create_system(options, full_system, system, dma_ports, bootmem,
     all_cntrls = []
 
     # Creates on RNF per cpu with priv l2 caches
-    assert(len(system.cpu) == options.num_cpus)
+    assert(len(cpus) == options.num_cpus)
     ruby_system.rnf = [ CHI_RNF([cpu], ruby_system, L1ICache, L1DCache,
                                 system.cache_line_size.value)
-                        for cpu in system.cpu ]
+                        for cpu in cpus ]
     for rnf in ruby_system.rnf:
         rnf.addPrivL2Cache(L2Cache)
         cpu_sequencers.extend(rnf.getSequencers())
