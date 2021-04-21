@@ -331,10 +331,10 @@ def addCommonOptions(parser):
     parser.add_argument(
         "--take-simpoint-checkpoints", action="store", type=str,
         help="<simpoint file,weight file,interval-length,warmup-length>")
-    parser.add_argument("--restore-simpoint-checkpoint", action="store_true",
-                        default=False,
-                        help="restore from a simpoint checkpoint taken with " +
-                        "--take-simpoint-checkpoints")
+    parser.add_option("--restore-simpoint-checkpoint", action="store_true",
+        default=False,
+        help="restore from a simpoint checkpoint taken with " +
+             "--take-simpoint-checkpoints")
 
     # Checkpointing options
     # Note that performing checkpointing via python script files will override
