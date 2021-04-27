@@ -385,10 +385,13 @@ elif main['CLANG']:
         for var in 'LTO_CCFLAGS', 'LTO_LDFLAGS':
             main[var] = ['-flto']
 
-    # clang has a few additional warnings that we disable.
-    with gem5_scons.Configure(main) as conf:
-        conf.CheckCxxFlag('-Wno-c99-designator')
-        conf.CheckCxxFlag('-Wno-defaulted-function-deleted')
+    # clang has a few additional warnings that we disable, extraneous
+    # parantheses are allowed due to Ruby's printing of the AST,
+    # finally self assignments are allowed as the generated CPU code
+    # is relying on this
+    main.Append(CCFLAGS=['-Wno-parentheses', '-Wno-self-assign'])
+    conf.CheckCxxFlag('-Wno-c99-designator')
+    conf.CheckCxxFlag('-Wno-defaulted-function-deleted')
 
     main.Append(TCMALLOC_CCFLAGS=['-fno-builtin'])
 
