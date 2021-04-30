@@ -217,7 +217,7 @@ EventQueue::serviceOne()
     if (!event->squashed()) {
         // forward current cycle to the time when this event occurs.
         setCurTick(event->when());
-        if (DTRACE(Event))
+        if (Debug::Event)
             event->trace("executed");
         event->process();
         if (event->isExitEvent()) {
