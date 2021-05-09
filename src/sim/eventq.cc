@@ -44,6 +44,9 @@
 #include "debug/IrqHalt.hh"
 #include "sim/core.hh"
 
+namespace gem5
+{
+
 Tick simQuantum = 0;
 
 //
@@ -590,3 +593,5 @@ EventQueue::handleAsyncInsertions()
 
     async_queue_mutex.unlock();
 }
+
+} // namespace gem5
