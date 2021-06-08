@@ -798,7 +798,7 @@ class EventQueue
         event->flags.set(Event::Scheduled);
         event->acquire();
 
-        if (Debug::Event)
+        if (debug::Event)
             event->trace("scheduled");
     }
 
@@ -819,7 +819,7 @@ class EventQueue
         event->flags.clear(Event::Squashed);
         event->flags.clear(Event::Scheduled);
 
-        if (Debug::Event)
+        if (debug::Event)
             event->trace("descheduled");
 
         event->release();
@@ -850,7 +850,7 @@ class EventQueue
         event->flags.clear(Event::Squashed);
         event->flags.set(Event::Scheduled);
 
-        if (Debug::Event)
+        if (debug::Event)
             event->trace("rescheduled");
     }
 
