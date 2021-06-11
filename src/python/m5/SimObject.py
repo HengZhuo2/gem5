@@ -700,7 +700,7 @@ class MetaSimObject(type):
     def pybind_predecls(cls, code):
         code('#include "${{cls.cxx_header}}"')
 
-    def params_create_decl(cls, code, python_enabled):
+    def pybind_decl(cls, code):
         py_class_name = cls.pybind_class
 
         # The 'local' attribute restricts us to the params declared in
@@ -816,6 +816,57 @@ module_init(py::module_ &m_internal)
 
         # include the create() methods whether or not python is enabled.
         if not hasattr(cls, 'abstract') or not cls.abstract:
+            code('.def(py::init<>())')
+            code('.def("create", &${cls}Params::create)')
+
+        param_exports = cls.cxx_param_exports + [
+            PyBindProperty(k)
+            for k, v in sorted(cls._params.local.items())
+        ] + [
+            PyBindProperty("port_%s_connection_count" % port.name)
+            for port in ports.values()
+        ]
+        for exp in param_exports:
+            exp.export(code, "%sParams" % cls)
+
+        code(';')
+        code()
+        code.dedent()
+
+        bases = []
+        if 'cxx_base' in cls._value_dict:
+            # If the c++ base class implied by python inheritance was
+            # overridden, use that value.
+            if cls.cxx_base:
+                bases.append(cls.cxx_base)
+        elif cls._base:
+            # If not and if there was a SimObject base, use its c++ class
+            # as this class' base.
+            bases.append(cls._base.cxx_class)
+        # Add in any extra bases that were requested.
+        bases.extend(cls.cxx_extra_bases)
+
+        if bases:
+            base_str = ", ".join(bases)
+            code('py::class_<${{cls.cxx_class}}, ${base_str}, ' \
+                 'std::unique_ptr<${{cls.cxx_class}}, py::nodelete>>(' \
+                 'm, "${py_class_name}")')
+        else:
+            code('py::class_<${{cls.cxx_class}}, ' \
+                 'std::unique_ptr<${{cls.cxx_class}}, py::nodelete>>(' \
+                 'm, "${py_class_name}")')
+        code.indent()
+        for exp in cls.cxx_exports:
+            exp.export(code, cls.cxx_class)
+        code(';')
+        code.dedent()
+        code()
+        code.dedent()
+        code('}')
+        code()
+        code('static EmbeddedPyBind embed_obj("${0}", module_init, "${1}");',
+             cls, cls._base.type if cls._base else "")
+        if not hasattr(cls, 'abstract') or not cls.abstract:
             if 'type' in cls.__dict__:
                 code()
                 code('namespace')
@@ -874,7 +925,7 @@ module_init(py::module_ &m_internal)
                 # method, or the Dummy one. Either an implementation is
                 # mandantory since this was shunted off to the dummy class, or
                 # one is optional which will override this weak version.
-                code('M5_VAR_USED ${{cls.cxx_class}} *')
+                code('GEM5_VAR_USED ${{cls.cxx_class}} *')
                 code('Dummy${cls}Shunt<${{cls.cxx_class}}>::Params::create() '
                      'const')
                 code('{')
