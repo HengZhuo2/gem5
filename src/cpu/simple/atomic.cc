@@ -41,6 +41,7 @@
 
 #include "cpu/simple/atomic.hh"
 
+#include "arch/locked_mem.hh"
 #include "base/output.hh"
 #include "config/the_isa.hh"
 #include "cpu/exetrace.hh"
@@ -133,8 +134,8 @@ AtomicSimpleCPU::threadSnoop(PacketPtr pkt, ThreadID sender)
                 wakeup(tid);
             }
 
-            threadInfo[tid]->thread->getIsaPtr()->handleLockedSnoop(pkt,
-                    dcachePort.cacheBlockMask);
+            TheISA::handleLockedSnoop(threadInfo[tid]->thread,
+                                      pkt, dcachePort.cacheBlockMask);
         }
     }
 }
@@ -298,8 +299,7 @@ AtomicSimpleCPU::AtomicCPUDPort::recvAtomicSnoop(PacketPtr pkt)
         DPRINTF(SimpleCPU, "received invalidation for addr:%#x\n",
                 pkt->getAddr());
         for (auto &t_info : cpu->threadInfo) {
-            t_info->thread->getIsaPtr()->handleLockedSnoop(pkt,
-                    cacheBlockMask);
+            TheISA::handleLockedSnoop(t_info->thread, pkt, cacheBlockMask);
         }
     }
 
@@ -325,8 +325,7 @@ AtomicSimpleCPU::AtomicCPUDPort::recvFunctionalSnoop(PacketPtr pkt)
         DPRINTF(SimpleCPU, "received invalidation for addr:%#x\n",
                 pkt->getAddr());
         for (auto &t_info : cpu->threadInfo) {
-            t_info->thread->getIsaPtr()->handleLockedSnoop(pkt,
-                    cacheBlockMask);
+            TheISA::handleLockedSnoop(t_info->thread, pkt, cacheBlockMask);
         }
     }
 }
@@ -409,7 +408,7 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
             assert(!pkt.isError());
 
             if (req->isLLSC()) {
-                thread->getIsaPtr()->handleLockedRead(req);
+                TheISA::handleLockedRead(thread, req);
             }
         }
 
@@ -484,8 +483,9 @@ AtomicSimpleCPU::writeMem(uint8_t *data, unsigned size, Addr addr,
 
             if (req->isLLSC()) {
                 assert(curr_frag_id == 0);
-                do_access = thread->getIsaPtr()->handleLockedWrite(req,
-                        dcachePort.cacheBlockMask);
+                do_access =
+                    TheISA::handleLockedWrite(thread, req,
+                                              dcachePort.cacheBlockMask);
             } else if (req->isSwap()) {
                 assert(curr_frag_id == 0);
                 if (req->isCondSwap()) {
