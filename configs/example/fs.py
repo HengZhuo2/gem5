@@ -103,7 +103,6 @@ def build_test_system(np):
             cmdline=cmdline,
             external_memory=args.external_memory_system,
             ruby=args.ruby,
-            security=args.enable_security_extensions,
             vio_9p=args.vio_9p,
             bootloader=args.bootloader,
         )
