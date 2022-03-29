@@ -266,6 +266,8 @@ class Event : public EventBase, public Serializable
     Priority _priority; //!< event priority
     Flags flags;
 
+    bool delayed; //used by Heng for indicating delayed event
+
 #ifndef NDEBUG
     /// Global counter to generate unique IDs for Event instances
     static Counter instanceCounter;
@@ -418,6 +420,7 @@ class Event : public EventBase, public Serializable
         whenCreated = curTick();
         whenScheduled = 0;
 #endif
+        delayed = false;
     }
 
     /**
@@ -512,6 +515,15 @@ class Event : public EventBase, public Serializable
 
     void serialize(CheckpointOut &cp) const override;
     void unserialize(CheckpointIn &cp) override;
+
+    /**
+     * These three function are used to set/unset delayed Virtual Timer
+     *  used by Heng
+     */
+    void setDelayed() { delayed = true;}
+    void rstDelayed() { delayed = false;}
+    bool isDelayed()  { return delayed;}
+
 };
 
 /**
@@ -617,7 +629,7 @@ class EventQueue
     Event *head;
     Tick _curTick;
 
-    Tick _haltTick;//record when is timer interrupt stopped
+    Tick _haltTick[3];//record when is timer interrupt stopped
 
     //! Mutex to protect async queue.
     std::mutex async_queue_mutex;
@@ -836,10 +848,15 @@ class EventQueue
 
     /**
      * Function for delaying and resuming virt_timer event.
+     * Second version: only delay/resume the corresponding cpu
      */
     void delayVT();
 
     void resumeVT();
+
+    void delayVT(int cpuID);
+
+    void resumeVT(int cpuID);
 
     /**
      * Function for moving events from the async_queue to the main queue.

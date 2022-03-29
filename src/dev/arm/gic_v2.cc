@@ -363,15 +363,15 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
                     "CPU %d reading IAR.id=%d IAR.cpu=%d, iar=0x%x\n",
                     ctx, iar.ack_id, iar.cpu_id, iar);
 
-            if ((iar.ack_id == 100) &&
-                (name().find("testsys") != std::string::npos)){
-                // cprintf("GICC_IAR Dump\n");
-                // mainEventQueue[0]->dump();
-                mainEventQueue[0]->delayVT();
-                for (int tidc = 1; tidc < 4; ++tidc){
-                    sys->getThreadContext(tidc)->irq_halting = true;
-                }
-            }
+            // if ((iar.ack_id == 100) &&
+            //     (name().find("testsys") != std::string::npos)){
+            //     // cprintf("GICC_IAR Dump\n");
+            //     // mainEventQueue[0]->dump();
+            //     mainEventQueue[0]->delayVT();
+            //     // for (int tidc = 1; tidc < 4; ++tidc){
+            //     //     sys->getThreadContext(tidc)->irq_halting = true;
+            //     // }
+            // }
 
             cpuHighestInt[ctx] = SPURIOUS_INT;
             updateIntState(-1);
@@ -626,15 +626,15 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
         DPRINTF(Interrupt, "CPU %d done handling intr IAR = %d from cpu %d\n",
                 ctx, iar.ack_id, iar.cpu_id);
 
-        if ((iar.ack_id == 100) &&
-            (name().find("testsys") != std::string::npos)){
-            // cprintf("GICC_EOIR Dump\n");
-            mainEventQueue[0]->resumeVT();
-            // mainEventQueue[0]->dump();
-            for (int tidc = 1; tidc < 4; ++tidc){
-                sys->getThreadContext(tidc)->irq_halting = false;
-            }
-        }
+        // if ((iar.ack_id == 100) &&
+        //     (name().find("testsys") != std::string::npos)){
+        //     // cprintf("GICC_EOIR Dump\n");
+        //     mainEventQueue[0]->resumeVT();
+        //     // mainEventQueue[0]->dump();
+        //     // for (int tidc = 1; tidc < 4; ++tidc){
+        //     //     sys->getThreadContext(tidc)->irq_halting = false;
+        //     // }
+        // }
 
         break;
       }

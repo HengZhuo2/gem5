@@ -50,6 +50,7 @@
 #include "debug/Drain.hh"
 #include "debug/ExecFaulting.hh"
 #include "debug/SimpleCPU.hh"
+#include "debug/TailTrace.hh"
 #include "mem/packet.hh"
 #include "mem/packet_access.hh"
 #include "mem/physical.hh"
@@ -707,6 +708,7 @@ AtomicSimpleCPU::tick()
 
             Tick stall_ticks = 0;
             if (curStaticInst) {
+
                 fault = curStaticInst->execute(&t_info, traceData);
 
                 // keep an instruction count

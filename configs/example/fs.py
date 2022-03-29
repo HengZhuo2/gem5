@@ -68,7 +68,9 @@ from common import Options
 
 
 sys.path.append('/research/hzhuo2/condor-rundata/gem5-tail/boot-base/')
+sys.path.append('/research/hzhuo2/condor-rundata/microbench/boot-base/')
 from benchlist import tailBenchs
+from microbenchlist import microBenchs
 
 def cmd_line_template():
     if options.command_line and options.command_line_file:
@@ -325,6 +327,7 @@ TestMemClass = Simulation.setMemClass(options)
 if options.benchmark:
     try:
         Benchmarks.update(tailBenchs) # add Tail Latency Defined Benchmark
+        Benchmarks.update(microBenchs) # add micro Benchmark
         bm = Benchmarks[options.benchmark]
     except KeyError:
         print("Error benchmark %s has not been defined." % options.benchmark)
