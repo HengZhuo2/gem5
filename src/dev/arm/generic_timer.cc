@@ -988,6 +988,7 @@ GenericTimerFrame::GenericTimerFrame(const GenericTimerFrameParams &p)
                 *this, systemCounter,
                 p.int_virt->get()),
       accessBits(0x3f),
+      nonSecureAccess(true),
       system(*dynamic_cast<ArmSystem *>(sys))
 {
     SystemCounter::validateCounterRef(p.counter);
