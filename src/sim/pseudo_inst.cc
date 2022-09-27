@@ -356,6 +356,8 @@ m5checkpoint(ThreadContext *tc, Tick delay, Tick period)
     if (DistIface::readyToCkpt(delay, period)) {
         Tick when = curTick() + delay * sim_clock::as_int::ns;
         Tick repeat = period * sim_clock::as_int::ns;
+        //do dumpreset before ckpt
+        statistics::schedStatEvent(true, true, when, repeat);
         exitSimLoop("checkpoint", 0, when, repeat);
     }
 }
@@ -443,7 +445,8 @@ writefile(ThreadContext *tc, Addr vaddr, uint64_t len, uint64_t offset,
     simout.close(out);
 
     delete [] buf;
-
+    // fallback to script on writefile, let script handle count
+    exitSimLoop("writefile");
     return len;
 }
 
