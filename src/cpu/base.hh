@@ -241,6 +241,17 @@ class BaseCPU : public ClockedObject
 
     void postInterrupt(ThreadID tid, int int_num, int index);
 
+    bool tcaflag = false;
+    void setTCAFlag(){
+      tcaflag = true;
+    }
+    void resetTCAFlag(){
+      tcaflag = false;
+    }
+    bool isTCAFlagSet(){
+      return tcaflag;
+    }
+
     void
     clearInterrupt(ThreadID tid, int int_num, int index)
     {

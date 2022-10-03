@@ -43,6 +43,10 @@ if env['CONF']['TARGET_ISA'] != 'null':
     Source('timing.cc')
 
     DebugFlag('SimpleCPU')
-
+    DebugFlag('ArmCPU')
+    DebugFlag('ArmMem')
+    DebugFlag('TcaMisc')
+    DebugFlag('TcaMem')
+    DebugFlag('TcaInst')
     Source('base.cc')
     SimObject('BaseSimpleCPU.py', sim_objects=['BaseSimpleCPU'])

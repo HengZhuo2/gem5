@@ -53,6 +53,8 @@
 #include "debug/MinorMem.hh"
 #include "debug/MinorTrace.hh"
 #include "debug/PCEvent.hh"
+#include "debug/TcaMem.hh"
+#include "debug/TcaMisc.hh"
 
 namespace gem5
 {
@@ -193,6 +195,8 @@ Execute::Execute(const std::string &name_,
             ReportTraitsAdaptor<QueuedInst> >(
             name_ + ".inFUMemInsts" + tid_str, "insts", total_slots);
     }
+
+    data_tca_req = std::make_shared<Request>();
 }
 
 const ForwardInstData *
@@ -438,6 +442,13 @@ Execute::takeInterrupt(ThreadID thread_id, BranchData &branch)
             interrupt->name(), cpu.getContext(thread_id)->pcState());
 
         /* Assume that an interrupt *must* cause a branch.  Assert this? */
+
+        if (cpu.getContext(0)->getCpuPtr()->isTCAFlagSet()) {
+            DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
+            tcaProcess();
+            DPRINTF(TcaMisc, "TCA done, reset now.\n");
+            cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
+        }
 
         updateBranchData(thread_id, BranchData::Interrupt,
             MinorDynInst::bubble(), cpu.getContext(thread_id)->pcState(),
@@ -1629,8 +1640,11 @@ Execute::checkInterrupts(BranchData& branch, bool& interrupted)
         } else {
             DPRINTF(MinorInterrupt, "No interrupt controller\n");
         }
-        DPRINTF(MinorInterrupt, "[tid:%d] thread_interrupted?=%d isInbetweenInsts?=%d\n",
-                tid, thread_interrupted, isInbetweenInsts(tid));
+        if (thread_interrupted) {
+            DPRINTF(MinorInterrupt, "[tid:%d] thread_interrupted?=%d"
+                    " isInbetweenInsts?=%d\n",
+                    tid, thread_interrupted, isInbetweenInsts(tid));
+        }
         /* Act on interrupts */
         if (thread_interrupted && isInbetweenInsts(tid)) {
             if (takeInterrupt(tid, branch)) {
@@ -1896,6 +1910,250 @@ MinorCPU::MinorCPUPort &
 Execute::getDcachePort()
 {
     return lsq.getDcachePort();
+}
+
+// similart to amoMem, but no amo_op, using default Read
+// input:   addr is vaddr ,
+//          data points to data that "store" the read,
+//          no usage out of this scope
+//          from mem and return to isa part.
+//          flags is the part where care need to be taken
+//          assume its nothing now
+Fault
+Execute::tcaReadMem(Addr addr, uint8_t* data, unsigned size)
+{
+    ThreadContext *thread = cpu.getContext(0); // hard code 0 now
+    // use the CPU's statically allocated amo request and packet objects
+    // const RequestPtr &req = data_tca_req;
+    RequestPtr &request = data_tca_req;
+    int cid = cpu.threads[0]->getTC()->contextId();
+    request->setContext(cid);
+    Request::Flags flags;
+    request->setVirt(addr, size, flags, cpu.dataRequestorId(),
+                thread->pcState().instAddr());
+    // translate to physical address
+    Fault fault = thread->getMMUPtr()->translateAtomic(
+        request, thread, BaseMMU::Read);
+    // pkt->addr
+    // Now do the access.
+    if (fault == NoFault && !request->getFlags().isSet(Request::NO_ACCESS)) {
+        Packet pkt(request, Packet::makeReadCmd(request));
+        pkt.dataStatic(data);
+
+        // dcache_latency += sendPacket(dcachePort, &pkt);
+        getDcachePort().sendAtomic(&pkt);
+        DPRINTF(TcaMem, "Done tcaReadMem, vaddr: %#x, paddr: %#x, size: %i,"
+                " data: %p, data ptr: %p. \n",
+                addr, request->getPaddr(), size, *(uint64_t*)data, &data);
+        // dcache_access = true;
+        panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
+                pkt.getAddrRange().to_string(), pkt.print());
+        assert(!request->isLLSC());
+    }
+
+    if (fault != NoFault && request->isPrefetch()) {
+        return NoFault;
+    }
+    //If there's a fault and we're not doing prefetch, return it
+    return fault;
+}
+
+Fault
+Execute::tcaWriteMem(Addr addr, uint8_t* data, unsigned size)
+{
+    ThreadContext *thread = cpu.getContext(0); // hard code 0 now
+    // use the CPU's statically allocated amo request and packet objects
+    const RequestPtr &req = data_tca_req;
+
+    Request::Flags flags;
+
+    req->setVirt(addr, size, flags, cpu.dataRequestorId(),
+                 thread->pcState().instAddr());
+
+    // translate to physical address
+    Fault fault = thread->getMMUPtr()->translateAtomic(
+        req, thread, BaseMMU::Write);
+
+    // Now do the access.
+    if (fault == NoFault && !req->getFlags().isSet(Request::NO_ACCESS)) {
+        Packet pkt(req, Packet::makeWriteCmd(req));
+        pkt.dataStatic(data);
+
+        getDcachePort().sendAtomic(&pkt);
+        DPRINTF(TcaMem, "Done tcaWriteMem, vaddr: %#x, paddr: %#x, size: %i,"
+                " data: %p, data ptr: %p. \n",
+                addr, req->getPaddr(), size, *(uint64_t*)data, &data);
+        panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
+                pkt.getAddrRange().to_string(), pkt.print());
+        assert(!req->isLLSC());
+    }
+
+    if (fault != NoFault && req->isPrefetch()) {
+        return NoFault;
+    }
+    //If there's a fault and we're not doing prefetch, return it
+    return fault;
+}
+
+void
+Execute:: rtListAdd(){
+    //pc 0xffffffc0080b71d0
+    Addr rtListAddr1 = 0xffffff807fb9d4b8; // next->prev , head->prev
+    Addr rtListAddr2 = 0xffffff8001b11b80; // new->next
+    Addr rtListAddr3 = 0xffffff8001b11b88; // new->prev
+    Addr rtListAddr4 = 0xffffff807fb9d4b0; // prev->next, head->prev->next
+
+    uint64_t *rtListData1 =  new uint64_t(0xffffff8001b11b80);
+    uint64_t *rtListData2 =  new uint64_t(0xffffff807fb9d4b0);
+    uint64_t *rtListData3 =  new uint64_t(0xffffff807fb9d4b0);
+    uint64_t *rtListData4 =  new uint64_t(0xffffff8001b11b80);
+
+    tcaWriteMem(rtListAddr1, (uint8_t*)rtListData1, 8);
+    tcaWriteMem(rtListAddr2, (uint8_t*)rtListData2, 8);
+    tcaWriteMem(rtListAddr3, (uint8_t*)rtListData3, 8);
+    tcaWriteMem(rtListAddr4, (uint8_t*)rtListData4, 8);
+
+    uint64_t* readData = new uint64_t(100);
+    tcaReadMem(rtListAddr1, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "rtListAddr1, after read: vaddr:"
+                        "%#x, data: %#x.\n", rtListAddr1, *readData);
+    tcaReadMem(rtListAddr2, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "rtListAddr2, after read: vaddr:"
+                        "%#x, data: %#x.\n", rtListAddr2, *readData);
+    tcaReadMem(rtListAddr3, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "rtListAddr3, after read: vaddr:"
+                        "%#x, data: %#x.\n", rtListAddr3, *readData);
+    tcaReadMem(rtListAddr4, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "rtListAddr4, after read: vaddr:"
+                        "%#x, data: %#x.\n", rtListAddr4, *readData);
+
+    // some states clean up due to modifying the running queue list
+    uint64_t* writeData = new uint64_t(100);
+
+    // rt.read.1 , read rq->curr->flags , pc ffffffc0080a36cc
+    tcaReadMem(0xffffffc008c0f700, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "TIF_NEED_RESCHED before. read: %#x.\n", *readData);
+    *writeData =  *readData | 0x2;
+    // rt.write.1 , write TIF_NEED_RESCHED
+    tcaWriteMem(0xffffffc008c0f700, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffffc008c0f700, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "TIF_NEED_RESCHED after. read: %#x.\n", *readData);
+
+    // rt.read.2 , read rq->nr_running, pc ffffffc0080b5a50
+    tcaReadMem(0xffffff807fb9cf44, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "rq->nr_running before. read: %#x.\n", *readData);
+    *writeData =  *readData + 1;
+    // rt.write.2 , write rq->nr_running
+    tcaWriteMem(0xffffff807fb9cf44, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff807fb9cf44, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "rq->nr_running after. read: %#x.\n", *readData);
+
+    // rt.read.2 , read rq->rt_nr_running , pc ffffffc0080b7218
+    tcaReadMem(0xffffff807fb9d790, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "rq->rt_nr_running before. read: %#x.\n", *readData);
+    *writeData =  *readData + 1;
+    // rt.write.2 , write rq->rt_nr_running
+    tcaWriteMem(0xffffff807fb9d790, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff807fb9d790, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "rq->rt_nr_running after. read: %#x.\n", *readData);
+
+    *writeData =  1;
+    // rt.write.3 , write rq->rt_queued, pc ffffffc0080b5a6c
+    tcaWriteMem(0xffffff807fb9d7c0, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff807fb9d7c0, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "rq->rt_queued after. read: %#x.\n", *readData);
+
+    // rt.read.4 , read __set_bit prio, pc ffffffc0080b71f8
+    tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "__set_bit prio before. read: %#x.\n", *readData);
+    *writeData =  *readData | 0x40000000000000;
+    // rt.write.4 , write __set_bit prio
+    tcaWriteMem(0xffffff807fb9d140, (uint8_t*)writeData, 8);
+    tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "__set_bit prio after. read: %#x.\n", *readData);
+
+    *writeData =  0x1;
+    // rt.write.5 , write rt_se->on_list, pc ffffffc0080b71fc
+    tcaWriteMem(0xffffff8001b11ba6, (uint8_t*)writeData, 2);
+    tcaReadMem(0xffffff8001b11ba6, (uint8_t*)readData, 2);
+    DPRINTF(TcaMem, "rt_se->on_list after. read: %#x.\n", *readData);
+
+    // rt.write.6 , write rt_se->on_rq , ffffffc0080b7208
+    tcaWriteMem(0xffffff8001b11ba4, (uint8_t*)writeData, 2);
+    tcaReadMem(0xffffff8001b11ba4, (uint8_t*)readData, 2);
+    DPRINTF(TcaMem, "rt_se->on_rq after. read: %#x.\n", *readData);
+}
+
+void
+Execute:: tcaProcess(){
+    // first read in eth1000 , to ethernet part
+    uint64_t* readData = new uint64_t(100);
+    uint64_t* writeData = new uint64_t(100);
+    // first read to gic get irq number
+    // gic.read.1 , read irq num, pc ffffffc0083ccf10
+    tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
+    // ethernet.read.1, pc ffffffc00851644c
+    tcaReadMem(0xffffffc0093800c0, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "first tca-eth read done. read: %#x.\n", *readData);
+    *writeData = -1;
+    // ethernet.write.1, mask all future irqs, pc ffffffc008516498
+    tcaWriteMem(0xffffffc0093800d8, (uint8_t*)writeData, 4);
+    // tcaReadMem(0xffffffc0092000d8, readData, 4); // check write to ethernet
+    // ethernet.read.2 , dont think its important, pc 0xffffffc0085164a0
+    tcaReadMem(0xffffffc009380008, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "second tca-eth read done. read: %#x.\n", *readData);
+
+    *writeData = 0;
+    // total_tx_bytes and total_tx_packets, total_rx_bytes and
+    // total_rx_packets, 8 bytes each write
+    // pc 0xffffffc0085164c8
+    tcaWriteMem(0xffffff8001026a60, (uint8_t*)writeData, 8);
+    // pc 0xffffffc0085164d0
+    tcaWriteMem(0xffffff8001026a68, (uint8_t*)writeData, 8);
+    DPRINTF(TcaMem, "wrote total bytes/packets done.\n");
+
+    // ethernet.read.1 , read napi_struct->state , pc 0xffffffc0086ca4e0
+    tcaReadMem(0xffffff8001026b00, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "napi_struct->state before. read: %#x.\n", *readData);
+    *writeData =  *readData | 0x1;
+    // ethernet.write.1 , write napi_struct->state, NAPIF_STATE_SCHED
+    // funky set this value in napi_schedule_prep, doing cmpxchg
+    tcaWriteMem(0xffffff8001026b00, (uint8_t*)writeData, 8);
+    tcaReadMem(0xffffff8001026b00, (uint8_t*)readData, 8);
+    DPRINTF(TcaMem, "napi_struct->state after. read: %#x.\n", *readData);
+
+    // pc 0xffffffc0086cb96c
+    tcaReadMem(0xffffff8001b11a10, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "read task_struct.__state, read: %#x.\n", *readData);
+
+    if ( !(*(uint8_t*)readData & 0x1)){
+        DPRINTF(TcaMem, "task_struct.__state is not TASK_INTERRUPTIBLE,"
+                "set NAPI_STATE_SCHED_THREADED\n");
+        // ethernet.read.1 , read napi_struct->state , pc 0xffffffc0086cb97c
+        tcaReadMem(0xffffff8001026b00, (uint8_t*)readData, 8);
+        DPRINTF(TcaMem, "napi_struct->state before. read: %#x.\n", *readData);
+        *writeData =  *readData | 0x200;
+        // ethernet.write.1 , write napi_struct->state
+        tcaWriteMem(0xffffff8001026b00, (uint8_t*)writeData, 8);
+        tcaReadMem(0xffffff8001026b00, (uint8_t*)readData, 8);
+        DPRINTF(TcaMem, "napi_struct->state after. read: %#x.\n", *readData);
+    }
+
+    // pc 0xffffffc0086cb96c
+    tcaReadMem(0xffffff8001b11a10, (uint8_t*)readData, 4);
+    if ( *(uint8_t*)readData & 0x3)
+        rtListAdd();
+    else
+        DPRINTF(TcaMem, "task_struct.__state is 0,"
+                "means TASK_RUNNING, dont add again.\n");
+
+    *writeData = 0x65;
+    // gic.write.1 , irq done ffffffc0083cd004
+    tcaWriteMem(0xffffffc00800d010, (uint8_t*)writeData, 4);
+    // gic.read.2 , read eoi, clearing it
+    tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "second tca-gic read done. read: %#x.\n", *readData);
 }
 
 } // namespace minor

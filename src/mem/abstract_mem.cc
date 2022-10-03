@@ -394,6 +394,8 @@ AbstractMemory::access(PacketPtr pkt)
 
     uint8_t *host_addr = toHostAddr(pkt->getAddr());
 
+    pkt->setHostAddr(host_addr);
+
     if (pkt->cmd == MemCmd::SwapReq) {
         if (pkt->isAtomicOp()) {
             if (pmemAddr) {

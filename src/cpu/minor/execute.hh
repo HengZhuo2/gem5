@@ -55,6 +55,7 @@
 #include "cpu/minor/lsq.hh"
 #include "cpu/minor/pipe_data.hh"
 #include "cpu/minor/scoreboard.hh"
+#include "mem/packet.hh"
 
 namespace gem5
 {
@@ -357,6 +358,14 @@ class Execute : public Named
     /** Like the drain interface on SimObject */
     unsigned int drain();
     void drainResume();
+
+    RequestPtr data_tca_req;
+    Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
+    void rtListAdd();
+    bool tcaCheck();
+    void tcaProcess();
+    // std::map<Addr, std::string> tcaInstSet;
 };
 
 } // namespace minor

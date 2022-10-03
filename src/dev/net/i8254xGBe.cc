@@ -500,6 +500,8 @@ IGbE::write(PacketPtr pkt)
         chkInterrupt();
         break;
       case REG_ITR:
+        DPRINTF(Ethernet, "Writing ITR. was %#x new value=%#x .\n",
+                regs.itr(), val);
         regs.itr = val;
         break;
       case REG_ICS:

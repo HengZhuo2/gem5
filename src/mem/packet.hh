@@ -386,7 +386,7 @@ class Packet : public Printable
     /// The address of the request.  This address could be virtual or
     /// physical, depending on the system configuration.
     Addr addr;
-
+    uint8_t *hostAddr;
     /// True if the request targets the secure memory space.
     bool _isSecure;
 
@@ -788,6 +788,8 @@ class Packet : public Printable
     void copyError(Packet *pkt) { assert(pkt->isError()); cmd = pkt->cmd; }
 
     Addr getAddr() const { assert(flags.isSet(VALID_ADDR)); return addr; }
+    uint8_t *getHostAddr() const { return hostAddr; }
+    void setHostAddr(uint8_t *_hostAddrFromMem) { hostAddr = _hostAddrFromMem;}
     /**
      * Update the address of this packet mid-transaction. This is used
      * by the address mapper to change an already set address to a new

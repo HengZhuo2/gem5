@@ -52,6 +52,7 @@
 #include "cpu/base.hh"
 #include "cpu/thread_context.hh"
 #include "debug/Faults.hh"
+#include "debug/TcaMisc.hh"
 #include "sim/full_system.hh"
 
 namespace gem5
@@ -717,6 +718,15 @@ ArmFault::invoke64(ThreadContext *tc, const StaticInstPtr &inst)
             "elr:%#x newVec: %#x %s\n", name(), cpsr, curr_pc, ret_addr,
             new_pc, arm_inst ? csprintf("inst: %#x", arm_inst->encoding()) :
             std::string());
+
+    if (new_pc == 0xffffffc008010a80) {
+        if (tc->getCpuPtr()->isTCAFlagSet()) {
+            DPRINTF(TcaMisc, "TCA flag set,"
+                "jump pc to eret now in faults.cc.\n");
+            new_pc = 0xffffffc0080120e8;
+        }
+    }
+
     PCState pc(new_pc);
     pc.aarch64(!cpsr.width);
     pc.nextAArch64(!cpsr.width);

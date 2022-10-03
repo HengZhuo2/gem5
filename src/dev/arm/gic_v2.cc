@@ -882,6 +882,14 @@ GicV2::updateIntState(int hint)
             DPRINTF(Interrupt, "Posting interrupt %d to cpu%d\n", highest_int,
                     cpu);
 
+            if (name()== "testsys.realview.gic" && cpu==0
+                    && cpuHighestInt[cpu] == 0x65) {
+                auto tc = sys->threads[0];
+                tc->getCpuPtr()->setTCAFlag();
+                DPRINTF(Interrupt, "TCA enabled, setTCAFlag due to irq %#x.\n",
+                        cpuHighestInt[0]);
+            }
+
             if (isFiq(cpu, highest_int)) {
                 postFiq(cpu, curTick() + intLatency);
             } else {
