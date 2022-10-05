@@ -362,7 +362,7 @@ class Execute : public Named
     RequestPtr data_tca_req;
     Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
     Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
-    void rtListAdd();
+    void wakeupNapi();
     bool tcaCheck();
     void tcaProcess();
     // std::map<Addr, std::string> tcaInstSet;
