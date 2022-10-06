@@ -1941,7 +1941,7 @@ Execute::tcaReadMem(Addr addr, uint8_t* data, unsigned size)
         pkt.dataStatic(data);
 
         // dcache_latency += sendPacket(dcachePort, &pkt);
-        getDcachePort().sendAtomic(&pkt);
+        getDcachePort().sendFunctional(&pkt);
         DPRINTF(TcaMem, "Done tcaReadMem, vaddr: %#x, paddr: %#x, size: %i,"
                 " data: %p, data ptr: %p. \n",
                 addr, request->getPaddr(), size, *(uint64_t*)data, &data);
@@ -1979,7 +1979,7 @@ Execute::tcaWriteMem(Addr addr, uint8_t* data, unsigned size)
         Packet pkt(req, Packet::makeWriteCmd(req));
         pkt.dataStatic(data);
 
-        getDcachePort().sendAtomic(&pkt);
+        getDcachePort().sendFunctional(&pkt);
         DPRINTF(TcaMem, "Done tcaWriteMem, vaddr: %#x, paddr: %#x, size: %i,"
                 " data: %p, data ptr: %p. \n",
                 addr, req->getPaddr(), size, *(uint64_t*)data, &data);

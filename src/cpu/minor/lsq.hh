@@ -115,9 +115,9 @@ class LSQ : public Named
         void recvTimingSnoopReq(PacketPtr pkt) override
         { return lsq.recvTimingSnoopReq(pkt); }
 
-        Tick recvAtomicSnoop(PacketPtr pkt) override{
-          lsq.recvTimingSnoopReq(pkt);
-          return 0;}
+        // Tick recvAtomicSnoop(PacketPtr pkt) override{
+        //   lsq.recvTimingSnoopReq(pkt);
+        //   return 0;}
 
         void recvFunctionalSnoop(PacketPtr pkt) override { }
     };
