@@ -674,6 +674,15 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
         updateRunPri();
         DPRINTF(Interrupt, "CPU %d done handling intr IAR = %d from cpu %d\n",
                 ctx, iar.ack_id, iar.cpu_id);
+
+        auto tc = sys->threads[0];
+        if (name()== "testsys.realview.gic" && ctx==0
+                && iar.ack_id == 0x65 && tc->getCpuPtr()->isTCAFlagSet()) {
+            tc->getCpuPtr()->resetTCAFlag();
+            DPRINTF(Interrupt, "NIC IRQ handled by cpu,"
+                    "clear TCA flag, prevent repeat.\n");
+        }
+
         break;
       }
       case GICC_APR0:
@@ -879,15 +888,22 @@ GicV2::updateIntState(int hint)
             !(getActiveInt(cpu, intNumToWord(highest_int))
               & (1 << intNumToBit(highest_int)))) {
 
-            DPRINTF(Interrupt, "Posting interrupt %d to cpu%d\n", highest_int,
-                    cpu);
+            DPRINTF(Interrupt, "Posting interrupt %d to cpu%d,"
+                    "another form[%d]\n", highest_int,
+                    cpu, cpuHighestInt[cpu]);
 
+            auto tc = sys->threads[0];
             if (name()== "testsys.realview.gic" && cpu==0
                     && cpuHighestInt[cpu] == 0x65) {
-                auto tc = sys->threads[0];
                 tc->getCpuPtr()->setTCAFlag();
                 DPRINTF(Interrupt, "TCA enabled, setTCAFlag due to irq %#x.\n",
                         cpuHighestInt[0]);
+            } else if (name()== "testsys.realview.gic" && cpu==0
+                    && cpuHighestInt[cpu] != 0x65
+                    && tc->getCpuPtr()->isTCAFlagSet()) {
+                tc->getCpuPtr()->resetTCAFlag();
+                DPRINTF(Interrupt, "TCA was enabled, but higher IRQ coming in,"
+                        "make ways for it.\n");
             }
 
             if (isFiq(cpu, highest_int)) {
