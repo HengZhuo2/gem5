@@ -130,7 +130,7 @@ GicV2::GicV2(const Params &p)
       distPioDelay(p.dist_pio_delay),
       cpuPioDelay(p.cpu_pio_delay), intLatency(p.int_latency),
       enabled(false), haveGem5Extensions(p.gem5_extensions),
-      itLines(p.it_lines),
+      haveTCA(p.tca_enable), itLines(p.it_lines),
       intEnabled {}, pendingInt {}, activeInt {}, intGroup {},
       intPriority {}, intConfig {}, cpuTarget {},
       cpuSgiPending {}, cpuSgiActive {},
@@ -676,7 +676,7 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
                 ctx, iar.ack_id, iar.cpu_id);
 
         auto tc = sys->threads[0];
-        if (name()== "testsys.realview.gic" && ctx==0
+        if (name()== "testsys.realview.gic" && ctx==0 && haveTCA
                 && iar.ack_id == 0x65 && tc->getCpuPtr()->isTCAFlagSet()) {
             tc->getCpuPtr()->resetTCAFlag();
             DPRINTF(Interrupt, "NIC IRQ handled by cpu,"
@@ -893,12 +893,12 @@ GicV2::updateIntState(int hint)
                     cpu, cpuHighestInt[cpu]);
 
             auto tc = sys->threads[0];
-            if (name()== "testsys.realview.gic" && cpu==0
+            if (name()== "testsys.realview.gic" && cpu==0 && haveTCA
                     && cpuHighestInt[cpu] == 0x65) {
                 tc->getCpuPtr()->setTCAFlag();
                 DPRINTF(Interrupt, "TCA enabled, setTCAFlag due to irq %#x.\n",
                         cpuHighestInt[0]);
-            } else if (name()== "testsys.realview.gic" && cpu==0
+            } else if (name()== "testsys.realview.gic" && cpu==0 && haveTCA
                     && cpuHighestInt[cpu] != 0x65
                     && tc->getCpuPtr()->isTCAFlagSet()) {
                 tc->getCpuPtr()->resetTCAFlag();

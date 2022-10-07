@@ -159,6 +159,7 @@ class GicV2(BaseGic):
     int_latency = Param.Latency('10ns', "Delay for interrupt to get to CPU")
     it_lines = Param.UInt32(128, "Number of interrupt lines supported (max = 1020)")
     gem5_extensions = Param.Bool(False, "Enable gem5 extensions")
+    tca_enable = Param.Bool(False, "Enable gem5 extensions")
 
 class Gic400(GicV2):
     """

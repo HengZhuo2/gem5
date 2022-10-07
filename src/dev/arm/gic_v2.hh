@@ -202,6 +202,9 @@ class GicV2 : public BaseGic, public GicV2Registers
     /** Are gem5 extensions available? */
     const bool haveGem5Extensions;
 
+    /** is tca available? */
+    const bool haveTCA;
+
     /** gem5 many-core extension enabled by driver */
     bool gem5ExtensionsEnabled;
 
