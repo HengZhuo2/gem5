@@ -1997,14 +1997,28 @@ Execute::tcaWriteMem(Addr addr, uint8_t* data, unsigned size)
 
 void
 Execute:: wakeupNapi(){
-    uint64_t* readData = new uint64_t(100);
 
-    // some states clean up due to modifying the running queue list
-    uint64_t* writeData = new uint64_t(100);
     ThreadContext *thread = cpu.getContext(0);
     RegVal currenTask = thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
+
+    // some states clean up due to modifying the running queue list
+    uint64_t* readData = new uint64_t(100);
+    uint64_t* writeData = new uint64_t(100);
+    // pc 0xffffffc0080a55c0
     if (currenTask == 0xffffff8001b11a00) {
         DPRINTF(TcaMem, "try_to_wake_up but p == curr,"
+            "set p->__state to TASK_RUNNING then return.");
+        *writeData =  0x0;
+        tcaWriteMem(0xffffff8001b11a10, (uint8_t*)writeData, 4);
+        return;
+    }
+
+    // task_struct->on_rq, 0xffffffc0080a5654
+    tcaReadMem(0xffffff8001b11a60, (uint8_t*)readData, 4);
+    if ( *(uint8_t*)readData && 0x1) {
+        // in ttwu_do_wakeup logic, we do not do task_woken
+        // nor idle_stamp(none for rt)
+        DPRINTF(TcaMem, "try_to_wake_up but p.on_rq is set,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
         tcaWriteMem(0xffffff8001b11a10, (uint8_t*)writeData, 4);
@@ -2013,12 +2027,14 @@ Execute:: wakeupNapi(){
     // rt.read.4 , read __set_bit prio, pc 0xffffffc0080b71f8
     tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
     DPRINTF(TcaMem, "__set_bit prio before. read: %#x.\n", *readData);
-    // rt_se->on_list
+    // rt_se->on_list, 0xffffffc0080b6ed8
     tcaReadMem(0xffffff8001b11ba6, (uint8_t*)readData, 2);
-
-    //rt_se->on_rq
+    //rt_se->on_rq, 0xffffffc0080b6eb0
     tcaReadMem(0xffffff8001b11ba4, (uint8_t*)readData, 2);
 
+    //task_struct->on_rq, 0xffffffc0080a5654
+    tcaReadMem(0xffffff8001b11a60, (uint8_t*)readData, 4);
+    // questionable, maybe not need every time
     // rt.read.1 , read rq->curr->flags , pc 0xffffffc0080a36cc
     tcaReadMem(0xffffffc008c0f700, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "TIF_NEED_RESCHED before. read: %#x.\n", *readData);
@@ -2112,9 +2128,14 @@ Execute:: wakeupNapi(){
     DPRINTF(TcaMem, "rtListAddr4, write read: vaddr:"
                         "%#x, data: %#x.\n", rtListAddr4, *readData);
 
+    // set p->__state to TASK_RUNNING
     *writeData =  0x0;
     tcaWriteMem(0xffffff8001b11a10, (uint8_t*)writeData, 4);
     tcaReadMem(0xffffff8001b11a10, (uint8_t*)readData, 4);
+
+    //task_struct->on_rq, ffffffc0080a3e38
+    *writeData =  0x1;
+    tcaWriteMem(0xffffff8001b11a60, (uint8_t*)writeData, 4);
 }
 
 void
