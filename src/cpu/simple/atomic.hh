@@ -166,6 +166,7 @@ class AtomicSimpleCPU : public BaseSimpleCPU
     RequestPtr data_read_req;
     RequestPtr data_write_req;
     RequestPtr data_amo_req;
+    RequestPtr data_tca_req;
 
     bool dcache_access;
     Tick dcache_latency;
@@ -245,7 +246,8 @@ class AtomicSimpleCPU : public BaseSimpleCPU
 
     Fault amoMem(Addr addr, uint8_t *data, unsigned size,
                  Request::Flags flags, AtomicOpFunctorPtr amo_op) override;
-
+    Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
     void regProbePoints() override;
 
     /**
@@ -261,11 +263,15 @@ class AtomicSimpleCPU : public BaseSimpleCPU
      * @param addr Address in gem5's address space.
      * @return Pointer to the corresponding memory address of the host.
      */
-    uint8_t *baseAddr = NULL;
-    bool baseAddrSet = false;
-    void setBaseAddr(Addr askAddr, uint8_t *resultAddr);
-    uint8_t * getBaseAddr(){return baseAddr; }
-    uint8_t * getHostAddr(Addr askAddr);
+    // uint8_t *baseAddr = NULL;
+    // bool baseAddrSet = false;
+    // void setBaseAddr(Addr askAddr, uint8_t *resultAddr);
+    // uint8_t * getBaseAddr(){return baseAddr; }
+    // uint8_t * getHostAddr(Addr askAddr);
+    void wakeupNapi();
+    bool tcaCheck();
+    void tcaProcess();
+    std::map<Addr, std::string> tcaInstSet;
 };
 
 } // namespace gem5
