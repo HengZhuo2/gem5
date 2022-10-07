@@ -295,7 +295,7 @@ def main():
     parser.add_argument("--client-script", type=str, default="",
                         help = "Linux client bootscript")
 
-    parser.add_argument("--tca-enable", type=bool, default=False,
+    parser.add_argument("--tca-enable", type=str, default=False,
                         help = "Linux client bootscript")
 
     parser.add_argument("--machine-type", type=str,
@@ -332,9 +332,9 @@ def main():
     root.testsys = create(args)
     print(args.script)
 
-    if args.tca_enable:
-        root.testsys.realview.gic.tca_enable = True
-
+    print(args.tca_enable)
+    root.testsys.realview.gic.tca_enable = args.tca_enable
+    print(root.testsys.realview.gic.tca_enable)
     # create driver node, as client, and setup link between driver and test
     args.script = args.client_script
     args.kernel = args.kernel
