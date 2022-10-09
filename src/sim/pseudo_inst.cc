@@ -446,7 +446,10 @@ writefile(ThreadContext *tc, Addr vaddr, uint64_t len, uint64_t offset,
 
     delete [] buf;
     // fallback to script on writefile, let script handle count
-    exitSimLoop("writefile");
+    // only do it when len is 256KB,
+    // which means multiple writefile called from one file
+    if (len != 0x40000)
+        exitSimLoop("writefile");
     return len;
 }
 
