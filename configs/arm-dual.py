@@ -269,7 +269,7 @@ def main():
     parser.add_argument("--cpu", type=str, choices=list(cpu_types.keys()),
                         default="atomic",
                         help="CPU model to use")
-    parser.add_argument("--cpu-freq", type=str, default="4GHz")
+    parser.add_argument("--cpu-freq", type=str, default="2GHz")
     parser.add_argument("--num-cores", type=int, default=1,
                         help="Number of CPU cores")
     parser.add_argument("--mem-type", default="DDR3_1600_8x8",
@@ -318,6 +318,9 @@ def main():
     parser.add_argument(
         "--max-writefiles", type=int,  default=1,
         help="max writefiles")
+    parser.add_argument(
+        "--random-seed", type=int,  default=666,
+        help="random seed")
 
     args = parser.parse_args()
     root = Root(full_system=True)
@@ -346,7 +349,8 @@ def main():
     args.cpu = "atomic"
     root.drivesys = create(args)
     # root.testsys2 = create(args)
-    root.etherlink = EtherLink(delay="20us")
+    root.etherlink = EtherLink(delay="18us", delay_var="2us",
+        rand_seed=args.random_seed)
     root.etherlink.int0 = root.testsys.ethernet.interface
     root.etherlink.int1 = root.drivesys.ethernet.interface
 

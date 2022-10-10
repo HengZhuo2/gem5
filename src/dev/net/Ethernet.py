@@ -62,6 +62,7 @@ class EtherLink(SimObject):
     int1 = EtherInt("interface 1")
     delay = Param.Latency('0us', "packet transmit delay")
     delay_var = Param.Latency('0ns', "packet transmit delay variability")
+    rand_seed = Param.Int('666', "packet transmit delay random seed")
     speed = Param.NetworkBandwidth('1Gbps', "link speed")
     dump = Param.EtherDump(NULL, "dump object")
 
