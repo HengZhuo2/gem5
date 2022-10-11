@@ -2153,6 +2153,10 @@ Execute:: tcaProcess(){
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
+    if ( *(uint32_t*)readData != 0x65){
+        DPRINTF(TcaMem, "somehow we here but GIC read is not 0x65, exit.\n");
+        return;
+    }
     // ethernet.read.1, pc ffffffc00851644c
     tcaReadMem(0xffffffc0093800c0, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "first tca-eth read done. read: %#x.\n", *readData);
