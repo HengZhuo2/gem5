@@ -444,10 +444,15 @@ Execute::takeInterrupt(ThreadID thread_id, BranchData &branch)
         /* Assume that an interrupt *must* cause a branch.  Assert this? */
 
         if (cpu.getContext(0)->getCpuPtr()->isTCAFlagSet()) {
-            DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
-            tcaProcess();
-            DPRINTF(TcaMisc, "TCA done, reset now.\n");
-            cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
+            if (cpu.getContext(thread_id)->pcState().instAddr()
+                    == 0xffffffc0080120e8) {
+                DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
+                tcaProcess();
+                DPRINTF(TcaMisc, "TCA done, reset now.\n");
+                cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
+            }else{
+                DPRINTF(TcaMisc, "TCA flag set, but PC have not set yet.\n");
+            }
         }
 
         updateBranchData(thread_id, BranchData::Interrupt,
