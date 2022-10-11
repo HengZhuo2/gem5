@@ -719,13 +719,24 @@ ArmFault::invoke64(ThreadContext *tc, const StaticInstPtr &inst)
             new_pc, arm_inst ? csprintf("inst: %#x", arm_inst->encoding()) :
             std::string());
 
-    if (new_pc == 0xffffffc008010a80) {
-        if (tc->getCpuPtr()->isTCAFlagSet()) {
-            DPRINTF(TcaMisc, "TCA flag set,"
-                "jump pc to eret now in faults.cc.\n");
-            new_pc = 0xffffffc0080120e8;
-        }
+    // if (new_pc == 0xffffffc008010a80 && ret_addr == 0x7ff7f7a520) {
+    //     tc->getCpuPtr()->resetTCAFlag();
+    //     DPRINTF(TcaMisc, "TCA flag set, but debug this one"
+    //         "see what normal cpu does.\n");
+    // } else
+
+    // first layer work
+    if (new_pc == 0xffffffc008010a80 && tc->getCpuPtr()->isTCAFlagSet()) {
+        // if (tc->getCpuPtr()->isTCAFlagSet()) {
+        DPRINTF(TcaMisc, "TCA flag set,"
+            "jump pc to eret now in faults.cc.\n");
+        new_pc = 0xffffffc0080120e8;
+        tc->getCpuPtr()->setTCAReady();
     }
+
+    // tc->setMiscReg(spsr_idx, spsr);
+    // tc->setMiscReg(elr_idx, ret_addr);
+    // tc->setMiscReg(MISCREG_CPSR, cpsr);
 
     PCState pc(new_pc);
     pc.aarch64(!cpsr.width);

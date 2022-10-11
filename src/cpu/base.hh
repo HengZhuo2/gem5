@@ -241,15 +241,25 @@ class BaseCPU : public ClockedObject
 
     void postInterrupt(ThreadID tid, int int_num, int index);
 
-    bool tcaflag = false;
+    bool tcaFlag = false;
+    bool tcaReady = false;
     void setTCAFlag(){
-      tcaflag = true;
+      tcaFlag = true;
     }
     void resetTCAFlag(){
-      tcaflag = false;
+      tcaFlag = false;
     }
     bool isTCAFlagSet(){
-      return tcaflag;
+      return tcaFlag;
+    }
+    void setTCAReady(){
+      tcaReady = true;
+    }
+    void resetTCAReady(){
+      tcaReady = false;
+    }
+    bool isTCAReadySet(){
+      return tcaReady;
     }
 
     void

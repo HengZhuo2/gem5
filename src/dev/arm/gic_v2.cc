@@ -680,7 +680,7 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
                 && iar.ack_id == 0x65 && tc->getCpuPtr()->isTCAFlagSet()) {
             tc->getCpuPtr()->resetTCAFlag();
             DPRINTF(Interrupt, "NIC IRQ handled by cpu,"
-                    "clear TCA flag, prevent repeat.\n");
+                    "reset TCAFlag, prevent repeat.\n");
         }
 
         break;
@@ -896,14 +896,14 @@ GicV2::updateIntState(int hint)
             if (name()== "testsys.realview.gic" && cpu==0 && haveTCA
                     && cpuHighestInt[cpu] == 0x65) {
                 tc->getCpuPtr()->setTCAFlag();
-                DPRINTF(Interrupt, "TCA enabled, setTCAFlag due to irq %#x.\n",
+                DPRINTF(Interrupt, "set TCAFlag due to irq %#x.\n",
                         cpuHighestInt[0]);
             } else if (name()== "testsys.realview.gic" && cpu==0 && haveTCA
                     && cpuHighestInt[cpu] != 0x65
                     && tc->getCpuPtr()->isTCAFlagSet()) {
                 tc->getCpuPtr()->resetTCAFlag();
-                DPRINTF(Interrupt, "TCA was enabled, but higher IRQ coming in,"
-                        "make ways for it.\n");
+                DPRINTF(Interrupt, "TCAFlag was set, but higher IRQ coming in,"
+                        "make ways for it, reset the TCAFlag.\n");
             }
 
             if (isFiq(cpu, highest_int)) {
