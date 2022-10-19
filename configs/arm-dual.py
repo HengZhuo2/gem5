@@ -214,7 +214,7 @@ def scriptCheckpoints(options, maxtick, cptdir):
     return exit_event
 
 def run(args):
-    cptNum = 1
+    # resetNum = 0
     writeNum = 0
     cptdir = m5.options.outdir
     if args.checkpoint:
@@ -233,8 +233,7 @@ def run(args):
         exit_msg = event.getCause()
         if exit_msg == "checkpoint":
             print("Dropping checkpoint at tick %d" % m5.curTick())
-            cpt_dir = os.path.join(m5.options.outdir, "cpt.%d" % cptNum)
-            cptNum = cptNum + 1
+            cpt_dir = os.path.join(m5.options.outdir, "cpt.1")
             m5.checkpoint(os.path.join(cpt_dir))
             print("Checkpoint done.")
         elif exit_msg == "writefile":
