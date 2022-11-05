@@ -66,6 +66,7 @@
 #include "debug/Fetch.hh"
 #include "debug/HtmCpu.hh"
 #include "debug/Quiesce.hh"
+#include "debug/TcaMisc.hh"
 #include "mem/packet.hh"
 #include "mem/request.hh"
 #include "params/BaseSimpleCPU.hh"
@@ -266,9 +267,17 @@ BaseSimpleCPU::checkForInterrupts()
                     interrupt->name());
                 return;
             }
+            DPRINTF(TcaMisc, "checkInterrupts returns true,"
+                "going to invoke, thread[%i], tca:%i.\n"
+                ,curThread,tc->getCpuPtr()->isTCAFlagSet());
 
+            if (tc->getCpuPtr()->isTCAFlagSet()) {
+                thread->getCpuPtr()->tcaProcess();
+                thread->getCpuPtr()->resetTCAFlag();
+                return;
+            }
             t_info.fetchOffset = 0;
-            interrupts[curThread]->updateIntrInfo();
+            interrupts[curThread]->updateIntrInfo(); // nothing for arm
             interrupt->invoke(tc);
             thread->decoder->reset();
         }

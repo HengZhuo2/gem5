@@ -693,7 +693,6 @@ ArmFault::invoke64(ThreadContext *tc, const StaticInstPtr &inst)
     tc->setMiscReg(elr_idx, ret_addr);
 
     Addr vec_address = getVector64(tc);
-
     // Update process state
     OperatingMode64 mode = 0;
     mode.spX = 1;
@@ -726,13 +725,13 @@ ArmFault::invoke64(ThreadContext *tc, const StaticInstPtr &inst)
     // } else
 
     // first layer work
-    if (new_pc == 0xffffffc008010a80 && tc->getCpuPtr()->isTCAFlagSet()) {
+    // if (new_pc == 0xffffffc008010a80 && tc->getCpuPtr()->isTCAFlagSet()) {
         // if (tc->getCpuPtr()->isTCAFlagSet()) {
-        DPRINTF(TcaMisc, "TCA flag set,"
-            "jump pc to eret now in faults.cc.\n");
-        new_pc = 0xffffffc0080120e8;
-        tc->getCpuPtr()->setTCAReady();
-    }
+        // DPRINTF(TcaMisc, "TCA flag set,"
+        //     "jump pc to eret now in faults.cc.\n");
+        // new_pc = 0xffffffc0080120e8;
+        // tc->getCpuPtr()->setTCAReady();
+    // }
 
     // tc->setMiscReg(spsr_idx, spsr);
     // tc->setMiscReg(elr_idx, ret_addr);

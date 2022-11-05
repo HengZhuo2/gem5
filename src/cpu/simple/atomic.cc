@@ -834,14 +834,14 @@ AtomicSimpleCPU::tick()
                         curStaticInst->disassemble(
                             thread->pcState().instAddr()));
                 }
-                if (thread->pcState().instAddr() == 0xffffffc0080120e8) {
-                    if (thread->getCpuPtr()->isTCAFlagSet()) {
-                        DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
-                        tcaProcess();
-                        DPRINTF(TcaMisc, "TCA done, reset now.\n");
-                        thread->getCpuPtr()->resetTCAFlag();
-                    }
-                }
+                // if (thread->pcState().instAddr() == 0xffffffc0080120e8) {
+                    // if (thread->getCpuPtr()->isTCAFlagSet()) {
+                        // DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
+                        // tcaProcess();
+                        // DPRINTF(TcaMisc, "TCA done, reset now.\n");
+                        // thread->getCpuPtr()->resetTCAFlag();
+                //     }
+                // }
                 fault = curStaticInst->execute(&t_info, traceData);
 
                 // keep an instruction count
@@ -943,35 +943,35 @@ AtomicSimpleCPU:: wakeupNapi(){
     uint64_t* writeData = new uint64_t(100);
     RegVal currenTask = thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
     // pc 0xffffffc0080a55c0
-    if (currenTask == 0xffffff8001b11a00) {
+    if (currenTask == 0xffffff8001d1ce00) {
         DPRINTF(TcaMem, "try_to_wake_up but p == curr,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
-        tcaWriteMem(0xffffff8001b11a10, (uint8_t*)writeData, 4);
+        tcaWriteMem(0xffffff8001d1ce10, (uint8_t*)writeData, 4);
         return;
     }
 
     // task_struct->on_rq, 0xffffffc0080a5654
-    tcaReadMem(0xffffff8001b11a60, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff8001d1ce60, (uint8_t*)readData, 4);
     if ( *(uint8_t*)readData && 0x1) {
         // in ttwu_do_wakeup logic, we do not do task_woken
         // nor idle_stamp(none for rt)
         DPRINTF(TcaMem, "try_to_wake_up but p.on_rq is set,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
-        tcaWriteMem(0xffffff8001b11a10, (uint8_t*)writeData, 4);
+        tcaWriteMem(0xffffff8001d1ce10, (uint8_t*)writeData, 4);
         return;
     }
     // rt.read.4 , read __set_bit prio, pc 0xffffffc0080b71f8
     tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
     DPRINTF(TcaMem, "__set_bit prio before. read: %#x.\n", *readData);
     // rt_se->on_list, 0xffffffc0080b6ed8
-    tcaReadMem(0xffffff8001b11ba6, (uint8_t*)readData, 2);
+    tcaReadMem(0xffffff8001d1cfa6, (uint8_t*)readData, 2);
     //rt_se->on_rq, 0xffffffc0080b6eb0
-    tcaReadMem(0xffffff8001b11ba4, (uint8_t*)readData, 2);
+    tcaReadMem(0xffffff8001d1cfa4, (uint8_t*)readData, 2);
 
     //task_struct->on_rq, 0xffffffc0080a5654
-    tcaReadMem(0xffffff8001b11a60, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff8001d1ce60, (uint8_t*)readData, 4);
     // questionable, maybe not need every time
     // rt.read.1 , read rq->curr->flags , pc 0xffffffc0080a36cc
     tcaReadMem(0xffffffc008c0f700, (uint8_t*)readData, 4);
@@ -1015,25 +1015,25 @@ AtomicSimpleCPU:: wakeupNapi(){
 
     *writeData =  0x1;
     // rt.write.5 , write rt_se->on_list, pc 0xffffffc0080b71fc
-    tcaWriteMem(0xffffff8001b11ba6, (uint8_t*)writeData, 2);
-    tcaReadMem(0xffffff8001b11ba6, (uint8_t*)readData, 2);
+    tcaWriteMem(0xffffff8001d1cfa6, (uint8_t*)writeData, 2);
+    tcaReadMem(0xffffff8001d1cfa6, (uint8_t*)readData, 2);
     DPRINTF(TcaMem, "rt_se->on_list after. read: %#x.\n", *readData);
 
     // rt.write.6 , write rt_se->on_rq , 0xffffffc0080b7208
-    tcaWriteMem(0xffffff8001b11ba4, (uint8_t*)writeData, 2);
-    tcaReadMem(0xffffff8001b11ba4, (uint8_t*)readData, 2);
+    tcaWriteMem(0xffffff8001d1cfa4, (uint8_t*)writeData, 2);
+    tcaReadMem(0xffffff8001d1cfa4, (uint8_t*)readData, 2);
     DPRINTF(TcaMem, "rt_se->on_rq after. read: %#x.\n", *readData);
 
     //pc 0xffffffc0080b71d0
     Addr rtListAddr1 = 0xffffff807fb9d4b8; // next->prev , head->prev
-    Addr rtListAddr2 = 0xffffff8001b11b80; // new->next
-    Addr rtListAddr3 = 0xffffff8001b11b88; // new->prev
+    Addr rtListAddr2 = 0xffffff8001d1cf80; // new->next
+    Addr rtListAddr3 = 0xffffff8001d1cf88; // new->prev
     Addr rtListAddr4 = 0xffffff807fb9d4b0; // prev->next, head->prev->next
 
-    uint64_t *rtListData1 =  new uint64_t(0xffffff8001b11b80);
+    uint64_t *rtListData1 =  new uint64_t(0xffffff8001d1cf80);
     uint64_t *rtListData2 =  new uint64_t(0xffffff807fb9d4b0);
     uint64_t *rtListData3 =  new uint64_t(0xffffff807fb9d4b0);
-    uint64_t *rtListData4 =  new uint64_t(0xffffff8001b11b80);
+    uint64_t *rtListData4 =  new uint64_t(0xffffff8001d1cf80);
 
     tcaReadMem(rtListAddr1, (uint8_t*)readData, 8);
     DPRINTF(TcaMem, "rtListAddr1, before write: vaddr:"
@@ -1066,14 +1066,14 @@ AtomicSimpleCPU:: wakeupNapi(){
     DPRINTF(TcaMem, "rtListAddr4, write read: vaddr:"
                         "%#x, data: %#x.\n", rtListAddr4, *readData);
 
-    // set p->__state to TASK_RUNNING
+    // set p->__state to TASK_RUNNING pc 0xffffffc0080a3d40
     *writeData =  0x0;
-    tcaWriteMem(0xffffff8001b11a10, (uint8_t*)writeData, 4);
-    tcaReadMem(0xffffff8001b11a10, (uint8_t*)readData, 4);
+    tcaWriteMem(0xffffff8001d1ce10, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff8001d1ce10, (uint8_t*)readData, 4);
 
     //task_struct->on_rq, ffffffc0080a3e38
     *writeData =  0x1;
-    tcaWriteMem(0xffffff8001b11a60, (uint8_t*)writeData, 4);
+    tcaWriteMem(0xffffff8001d1ce60, (uint8_t*)writeData, 4);
 }
 
 void
@@ -1116,7 +1116,7 @@ AtomicSimpleCPU:: tcaProcess(){
     DPRINTF(TcaMem, "napi_struct->state after. read: %#x.\n", *readData);
 
     // pc 0xffffffc0086cb96c
-    tcaReadMem(0xffffff8001b11a10, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff8001d1ce10, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "read task_struct.__state, read: %#x.\n", *readData);
 
     if ( !(*(uint8_t*)readData & 0x1)){
@@ -1133,7 +1133,7 @@ AtomicSimpleCPU:: tcaProcess(){
     }
 
     // pc 0xffffffc0086cb96c
-    tcaReadMem(0xffffff8001b11a10, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff8001d1ce10, (uint8_t*)readData, 4);
     if ( *(uint8_t*)readData & 0x3)
         wakeupNapi();
     else
@@ -1143,7 +1143,7 @@ AtomicSimpleCPU:: tcaProcess(){
     *writeData = 0x65;
     // gic.write.1 , irq done ffffffc0083cd004
     tcaWriteMem(0xffffffc00800d010, (uint8_t*)writeData, 4);
-    // gic.read.2 , read eoi, clearing it
+    // gic.read.2 , read eoi, clearing it , pc 0xffffffc0083ccf10
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "second tca-gic read done. read: %#x.\n", *readData);
 }
