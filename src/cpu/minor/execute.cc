@@ -443,18 +443,18 @@ Execute::takeInterrupt(ThreadID thread_id, BranchData &branch)
 
         /* Assume that an interrupt *must* cause a branch.  Assert this? */
 
-        if (cpu.getContext(0)->getCpuPtr()->isTCAReadySet()) {
-            if (cpu.getContext(thread_id)->pcState().instAddr()
-                    == 0xffffffc0080120e8) {
-                DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
-                tcaProcess();
-                DPRINTF(TcaMisc, "TCA done, reset now.\n");
-                // cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
-                cpu.getContext(0)->getCpuPtr()->resetTCAReady();
-            }else{
-                DPRINTF(TcaMisc, "TCA flag set, but PC have not set yet.\n");
-            }
-        }
+        // if (cpu.getContext(0)->getCpuPtr()->isTCAReadySet()) {
+        //     if (cpu.getContext(thread_id)->pcState().instAddr()
+        //             == 0xffffffc0080120e8) {
+        //         DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
+        //         tcaProcess();
+        //         DPRINTF(TcaMisc, "TCA done, reset now.\n");
+        //         // cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
+        //         cpu.getContext(0)->getCpuPtr()->resetTCAReady();
+        //     }else{
+        //         DPRINTF(TcaMisc, "TCA flag set,but PC have not set.\n");
+        //     }
+        // }
 
         updateBranchData(thread_id, BranchData::Interrupt,
             MinorDynInst::bubble(), cpu.getContext(thread_id)->pcState(),
@@ -1653,6 +1653,11 @@ Execute::checkInterrupts(BranchData& branch, bool& interrupted)
         }
         /* Act on interrupts */
         if (thread_interrupted && isInbetweenInsts(tid)) {
+            if (tid==0 && cpu.getContext(0)->getCpuPtr()->isTCAFlagSet()) {
+                tcaProcess();
+                cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
+                return tid;
+            }
             if (takeInterrupt(tid, branch)) {
                 interruptPriority = tid;
                 return tid;
