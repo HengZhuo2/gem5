@@ -667,8 +667,8 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
         } else {
             uint32_t int_num = 1 << intNumToBit(iar.ack_id);
             if (!(getActiveInt(ctx, intNumToWord(iar.ack_id)) & int_num))
-                warn("Done handling interrupt that isn't active: %d\n",
-                      intNumToBit(iar.ack_id));
+                warn("Done handling interrupt that isn't active: %d, %d\n",
+                      intNumToBit(iar.ack_id), curTick());
             getActiveInt(ctx, intNumToWord(iar.ack_id)) &= ~int_num;
         }
         updateRunPri();
