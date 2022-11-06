@@ -65,7 +65,9 @@ MinorStats::MinorStats(BaseCPU *base_cpu)
                 statistics::units::Count, statistics::units::Cycle>::get(),
              "IPC: instructions per cycle"),
     ADD_STAT(committedInstType, statistics::units::Count::get(),
-             "Class of committed instruction")
+             "Class of committed instruction"),
+    ADD_STAT(numTcaExes, statistics::units::Count::get(),
+             "Number of times IRQAcc used by Execute")
 {
     quiesceCycles.prereq(quiesceCycles);
 

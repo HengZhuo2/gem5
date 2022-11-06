@@ -82,6 +82,9 @@ struct MinorStats : public statistics::Group
     /** Number of instructions by type (OpClass) */
     statistics::Vector2d committedInstType;
 
+    /** Number of times IRQAcc used by Execute */
+    statistics::Scalar numTcaExes;
+
 };
 
 } // namespace minor

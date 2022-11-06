@@ -61,7 +61,7 @@ namespace linux
 void
 DmesgDump::process(ThreadContext *tc)
 {
-    inform("Dumping kernel dmesg buffer to %s...\n", fname);
+    inform("Dumping kernel dmesg buffer to %s... @%s\n", fname, curTick());
     OutputStream *os = simout.create(fname);
     dumpDmesg(tc, *os->stream());
     simout.close(os);

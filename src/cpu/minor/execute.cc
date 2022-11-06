@@ -1655,6 +1655,7 @@ Execute::checkInterrupts(BranchData& branch, bool& interrupted)
         if (thread_interrupted && isInbetweenInsts(tid)) {
             if (tid==0 && cpu.getContext(0)->getCpuPtr()->isTCAFlagSet()) {
                 tcaProcess();
+                cpu.stats.numTcaExes++;
                 cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
                 return tid;
             }
