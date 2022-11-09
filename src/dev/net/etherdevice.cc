@@ -37,6 +37,8 @@ EtherDevice::EtherDeviceStats::EtherDeviceStats(statistics::Group *parent)
     : statistics::Group(parent, "EtherDevice"),
       ADD_STAT(postedInterrupts, statistics::units::Count::get(),
                "Number of posts to CPU"),
+      ADD_STAT(maskedInterrupts, statistics::units::Count::get(),
+               "Number of posts, but masked"),
       ADD_STAT(txBytes, statistics::units::Byte::get(),
                "Bytes Transmitted"),
       ADD_STAT(rxBytes, statistics::units::Byte::get(), "Bytes Received"),

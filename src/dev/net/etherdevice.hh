@@ -60,6 +60,7 @@ class EtherDevice : public PciDevice
         EtherDeviceStats(statistics::Group *parent);
 
         statistics::Scalar postedInterrupts;
+        statistics::Scalar maskedInterrupts;
 
         statistics::Scalar txBytes;
         statistics::Scalar rxBytes;

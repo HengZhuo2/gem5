@@ -738,15 +738,14 @@ void
 IGbE::cpuPostInt()
 {
 
-    etherDeviceStats.postedInterrupts++;
-
     if (!(regs.icr() & regs.imr)) {
         DPRINTF(Ethernet, "Interrupt Masked. Not Posting\n");
+        etherDeviceStats.maskedInterrupts++;
         return;
     }
 
     DPRINTF(Ethernet, "Posting Interrupt\n");
-
+    etherDeviceStats.postedInterrupts++;
 
     if (interEvent.scheduled()) {
         deschedule(interEvent);
