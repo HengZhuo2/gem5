@@ -892,13 +892,13 @@ GicV2::updateIntState(int hint)
                     "another form[%d]\n", highest_int,
                     cpu, cpuHighestInt[cpu]);
 
-            auto tc = sys->threads[0];
-            if (name()== "testsys.realview.gic" && cpu==0 && haveTCA
+            auto tc = sys->threads[1];
+            if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
                     && cpuHighestInt[cpu] == 0x65) {
                 tc->getCpuPtr()->setTCAFlag();
                 DPRINTF(Interrupt, "set TCAFlag due to irq %#x.\n",
                         cpuHighestInt[0]);
-            } else if (name()== "testsys.realview.gic" && cpu==0 && haveTCA
+            } else if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
                     && cpuHighestInt[cpu] != 0x65
                     && tc->getCpuPtr()->isTCAFlagSet()) {
                 tc->getCpuPtr()->resetTCAFlag();
