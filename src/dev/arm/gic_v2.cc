@@ -676,7 +676,7 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
                 ctx, iar.ack_id, iar.cpu_id);
 
         auto tc = sys->threads[0];
-        if (name()== "testsys.realview.gic" && ctx==0 && haveTCA
+        if (name()== "testsys.realview.gic" && ctx==1 && haveTCA
                 && iar.ack_id == 0x65 && tc->getCpuPtr()->isTCAFlagSet()) {
             tc->getCpuPtr()->resetTCAFlag();
             DPRINTF(Interrupt, "NIC IRQ handled by cpu,"
@@ -897,7 +897,7 @@ GicV2::updateIntState(int hint)
                     && cpuHighestInt[cpu] == 0x65) {
                 tc->getCpuPtr()->setTCAFlag();
                 DPRINTF(Interrupt, "set TCAFlag due to irq %#x.\n",
-                        cpuHighestInt[0]);
+                        cpuHighestInt[cpu]);
             } else if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
                     && cpuHighestInt[cpu] != 0x65
                     && tc->getCpuPtr()->isTCAFlagSet()) {

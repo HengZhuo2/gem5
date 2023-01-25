@@ -431,6 +431,17 @@ Execute::takeInterrupt(ThreadID thread_id, BranchData &branch)
 
     Fault interrupt = cpu.getInterruptController(thread_id)->getInterrupt();
 
+    if (interrupt->name() == "IRQ") {
+        if (cpu.getContext(0)->getCpuPtr()->isTCAFlagSet()) {
+            DPRINTF(TcaMisc, "TCA processing\n");
+            tcaProcess();
+            cpu.stats.numTcaExes++;
+            DPRINTF(TcaMisc, "TCA processed, reset tcaFlag\n");
+            cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
+            return interrupt != NoFault;
+        }
+    }
+
     if (interrupt != NoFault) {
         /* The interrupt *must* set pcState */
         cpu.getInterruptController(thread_id)->updateIntrInfo();
@@ -442,19 +453,6 @@ Execute::takeInterrupt(ThreadID thread_id, BranchData &branch)
             interrupt->name(), cpu.getContext(thread_id)->pcState());
 
         /* Assume that an interrupt *must* cause a branch.  Assert this? */
-
-        // if (cpu.getContext(0)->getCpuPtr()->isTCAReadySet()) {
-        //     if (cpu.getContext(thread_id)->pcState().instAddr()
-        //             == 0xffffffc0080120e8) {
-        //         DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
-        //         tcaProcess();
-        //         DPRINTF(TcaMisc, "TCA done, reset now.\n");
-        //         // cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
-        //         cpu.getContext(0)->getCpuPtr()->resetTCAReady();
-        //     }else{
-        //         DPRINTF(TcaMisc, "TCA flag set,but PC have not set.\n");
-        //     }
-        // }
 
         updateBranchData(thread_id, BranchData::Interrupt,
             MinorDynInst::bubble(), cpu.getContext(thread_id)->pcState(),
@@ -1653,12 +1651,6 @@ Execute::checkInterrupts(BranchData& branch, bool& interrupted)
         }
         /* Act on interrupts */
         if (thread_interrupted && isInbetweenInsts(tid)) {
-            if (tid==0 && cpu.getContext(0)->getCpuPtr()->isTCAFlagSet()) {
-                tcaProcess();
-                cpu.stats.numTcaExes++;
-                cpu.getContext(0)->getCpuPtr()->resetTCAFlag();
-                return tid;
-            }
             if (takeInterrupt(tid, branch)) {
                 interruptPriority = tid;
                 return tid;
