@@ -2096,18 +2096,18 @@ Execute:: wakeupNapi(){
     DPRINTF(TcaMem, "rt_se->on_rq after. read: %#x.\n", *readData);
 
     //pc 0xffffffc0080b71d0
-    // next->prev , head->prev
-    Addr rtListAddr1 = 0xffffff807fbb04b8;
-    // new->next , tnapi_addr + 0x180
-    Addr rtListAddr2 = tnapi_addr + 0x180;
-    // new->prev , tnapi_addr + 0x180 + 0x8
-    Addr rtListAddr3 = tnapi_addr + 0x180 + 0x8;
-    // prev->next, head->prev->next
-    Addr rtListAddr4 = 0xffffff807fbb04b0;
+    Addr *rtListPrevAddr = new uint64_t(0);
+    Addr rtListAddr1 = 0xffffff807fbb04b8; // next->prev , head->prev, prev
+    tcaReadMem(rtListAddr1, (uint8_t*)rtListPrevAddr, 8);
+    DPRINTF(TcaMem, "rtListAddr1, read prev info, vaddr:"
+                        "%#x, data: %#x.\n", rtListAddr1, *rtListPrevAddr);
+    Addr rtListAddr2 = tnapi_addr + 0x180; // new->next points to tnapi
+    Addr rtListAddr3 = tnapi_addr + 0x180 + 0x8; // new->prev points to tnapi
+    Addr rtListAddr4 = *rtListPrevAddr; // prev->next, head->prev->next
 
     uint64_t *rtListData1 =  new uint64_t(tnapi_addr + 0x180);
     uint64_t *rtListData2 =  new uint64_t(0xffffff807fbb04b0);
-    uint64_t *rtListData3 =  new uint64_t(0xffffff807fbb04b0);
+    uint64_t *rtListData3 =  new uint64_t(*rtListPrevAddr);
     uint64_t *rtListData4 =  new uint64_t(tnapi_addr + 0x180);
 
     tcaReadMem(rtListAddr1, (uint8_t*)readData, 8);
