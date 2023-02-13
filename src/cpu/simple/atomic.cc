@@ -433,7 +433,13 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
                 dcache_latency += sendPacket(dcachePort, &pkt);
             }
             dcache_access = true;
-
+            if (tcaInstSet.find(thread->pcState().instAddr())
+                    != tcaInstSet.end()) {
+                DPRINTF(TcaMem, "Done readmem, vaddr: %#x, paddr: %#x,"
+                    "size: %i, data: %p, req->data ptr: %p. \n",
+                    frag_addr, req->getPaddr(), size,
+                    *(uint64_t*)data, &data);
+            }
             DPRINTF(ArmMem, "Done readmem, vaddr: %#x, paddr: %#x, size: %i,"
                 " data: %p, req->data ptr: %p. \n",
                 frag_addr, req->getPaddr(), size, *(uint64_t*)data, &data);
@@ -826,14 +832,6 @@ AtomicSimpleCPU::tick()
                         curStaticInst->disassemble(
                             thread->pcState().instAddr()));
                 }
-                if (tcaInstSet.find(thread->pcState().instAddr())
-                    != tcaInstSet.end()) {
-                    DPRINTF(TcaInst, "TcaInst:%s at pc %#x, %s. \n",
-                        tcaInstSet[thread->pcState().instAddr()],
-                        thread->pcState().instAddr(),
-                        curStaticInst->disassemble(
-                            thread->pcState().instAddr()));
-                }
                 // if (thread->pcState().instAddr() == 0xffffffc0080120e8) {
                     // if (thread->getCpuPtr()->isTCAFlagSet()) {
                         // DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
@@ -943,110 +941,127 @@ AtomicSimpleCPU:: wakeupNapi(){
     uint64_t* writeData = new uint64_t(100);
     RegVal currenTask = thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
     // pc 0xffffffc0080a55c0
-    if (currenTask == 0xffffff8001d1ce00) {
+    uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+    if (currenTask == tnapi_addr) {
         DPRINTF(TcaMem, "try_to_wake_up but p == curr,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
-        tcaWriteMem(0xffffff8001d1ce10, (uint8_t*)writeData, 4);
+        // task_struct->__state
+        // tnapi_addr + 0x10
+        tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
         return;
     }
 
     // task_struct->on_rq, 0xffffffc0080a5654
-    tcaReadMem(0xffffff8001d1ce60, (uint8_t*)readData, 4);
+    // tnapi_addr + 0x60
+    tcaReadMem(tnapi_addr + 0x60, (uint8_t*)readData, 4);
     if ( *(uint8_t*)readData && 0x1) {
         // in ttwu_do_wakeup logic, we do not do task_woken
         // nor idle_stamp(none for rt)
         DPRINTF(TcaMem, "try_to_wake_up but p.on_rq is set,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
-        tcaWriteMem(0xffffff8001d1ce10, (uint8_t*)writeData, 4);
+        tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
         return;
     }
     // rt.read.4 , read __set_bit prio, pc 0xffffffc0080b71f8
-    tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
+    tcaReadMem(0xffffff807fbb0140, (uint8_t*)readData, 8);
     DPRINTF(TcaMem, "__set_bit prio before. read: %#x.\n", *readData);
+    // struct sched_rt_entity *rt_se = tnapi_addr + 0x180
     // rt_se->on_list, 0xffffffc0080b6ed8
-    tcaReadMem(0xffffff8001d1cfa6, (uint8_t*)readData, 2);
-    //rt_se->on_rq, 0xffffffc0080b6eb0
-    tcaReadMem(0xffffff8001d1cfa4, (uint8_t*)readData, 2);
+    // tnapi_addr + 0x180 + 0x26
+    tcaReadMem(tnapi_addr + 0x1a6, (uint8_t*)readData, 2);
+    // rt_se->on_rq, 0xffffffc0080b6eb0
+    // tnapi_addr + 0x180 + 0x24
+    tcaReadMem(tnapi_addr + 0x1a4, (uint8_t*)readData, 2);
 
-    //task_struct->on_rq, 0xffffffc0080a5654
-    tcaReadMem(0xffffff8001d1ce60, (uint8_t*)readData, 4);
+    // task_struct->on_rq, 0xffffffc0080a5654
+    // tnapi_addr + 0x60
+    tcaReadMem(tnapi_addr + 0x60, (uint8_t*)readData, 4);
     // questionable, maybe not need every time
     // rt.read.1 , read rq->curr->flags , pc 0xffffffc0080a36cc
-    tcaReadMem(0xffffffc008c0f700, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff800109a700, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "TIF_NEED_RESCHED before. read: %#x.\n", *readData);
     *writeData =  *readData | 0x2;
     // rt.write.1 , write TIF_NEED_RESCHED
-    tcaWriteMem(0xffffffc008c0f700, (uint8_t*)writeData, 4);
-    tcaReadMem(0xffffffc008c0f700, (uint8_t*)readData, 4);
+    tcaWriteMem(0xffffff800109a700, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff800109a700, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "TIF_NEED_RESCHED after. read: %#x.\n", *readData);
 
     // rt.read.2 , read rq->nr_running, pc 0xffffffc0080b5a50
-    tcaReadMem(0xffffff807fb9cf44, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff807fbaff44, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "rq->nr_running before. read: %#x.\n", *readData);
     *writeData =  *readData + 1;
     // rt.write.2 , write rq->nr_running
-    tcaWriteMem(0xffffff807fb9cf44, (uint8_t*)writeData, 4);
-    tcaReadMem(0xffffff807fb9cf44, (uint8_t*)readData, 4);
+    tcaWriteMem(0xffffff807fbaff44, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff807fbaff44, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "rq->nr_running after. read: %#x.\n", *readData);
 
     // rt.read.2 , read rq->rt_nr_running , pc 0xffffffc0080b7218
-    tcaReadMem(0xffffff807fb9d790, (uint8_t*)readData, 4);
+    tcaReadMem(0xffffff807fbb0790, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "rq->rt_nr_running before. read: %#x.\n", *readData);
     *writeData =  *readData + 1;
     // rt.write.2 , write rq->rt_nr_running
-    tcaWriteMem(0xffffff807fb9d790, (uint8_t*)writeData, 4);
-    tcaReadMem(0xffffff807fb9d790, (uint8_t*)readData, 4);
+    tcaWriteMem(0xffffff807fbb0790, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff807fbb0790, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "rq->rt_nr_running after. read: %#x.\n", *readData);
 
     *writeData =  1;
     // rt.write.3 , write rq->rt_queued, pc 0xffffffc0080b5a6c
-    tcaWriteMem(0xffffff807fb9d7c0, (uint8_t*)writeData, 4);
-    tcaReadMem(0xffffff807fb9d7c0, (uint8_t*)readData, 4);
+    tcaWriteMem(0xffffff807fbb07c0, (uint8_t*)writeData, 4);
+    tcaReadMem(0xffffff807fbb07c0, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "rq->rt_queued after. read: %#x.\n", *readData);
 
-    tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
+    tcaReadMem(0xffffff807fbb0140, (uint8_t*)readData, 8);
     *writeData =  *readData | 0x40000000000000;
     // rt.write.4 , write __set_bit prio
-    tcaWriteMem(0xffffff807fb9d140, (uint8_t*)writeData, 8);
-    tcaReadMem(0xffffff807fb9d140, (uint8_t*)readData, 8);
+    tcaWriteMem(0xffffff807fbb0140, (uint8_t*)writeData, 8);
+    tcaReadMem(0xffffff807fbb0140, (uint8_t*)readData, 8);
     DPRINTF(TcaMem, "__set_bit prio after. read: %#x.\n", *readData);
 
     *writeData =  0x1;
     // rt.write.5 , write rt_se->on_list, pc 0xffffffc0080b71fc
-    tcaWriteMem(0xffffff8001d1cfa6, (uint8_t*)writeData, 2);
-    tcaReadMem(0xffffff8001d1cfa6, (uint8_t*)readData, 2);
+    // tnapi_addr + 0x180 + 0x24
+    tcaWriteMem(tnapi_addr + 0x1a6, (uint8_t*)writeData, 2);
+    tcaReadMem(tnapi_addr + 0x1a6, (uint8_t*)readData, 2);
     DPRINTF(TcaMem, "rt_se->on_list after. read: %#x.\n", *readData);
 
     // rt.write.6 , write rt_se->on_rq , 0xffffffc0080b7208
-    tcaWriteMem(0xffffff8001d1cfa4, (uint8_t*)writeData, 2);
-    tcaReadMem(0xffffff8001d1cfa4, (uint8_t*)readData, 2);
+    // tnapi_addr + 0x180 + 0x22
+    tcaWriteMem(tnapi_addr + 0x1a4, (uint8_t*)writeData, 2);
+    tcaReadMem(tnapi_addr + 0x1a4, (uint8_t*)readData, 2);
     DPRINTF(TcaMem, "rt_se->on_rq after. read: %#x.\n", *readData);
 
     //pc 0xffffffc0080b71d0
-    Addr rtListAddr1 = 0xffffff807fb9d4b8; // next->prev , head->prev
-    Addr rtListAddr2 = 0xffffff8001d1cf80; // new->next
-    Addr rtListAddr3 = 0xffffff8001d1cf88; // new->prev
-    Addr rtListAddr4 = 0xffffff807fb9d4b0; // prev->next, head->prev->next
+    Addr *rtListPrevAddr = new uint64_t(0);
+    Addr rtListAddr1 = 0xffffff807fbb04b8; // next->prev , head->prev
+    tcaReadMem(rtListAddr1, (uint8_t*)rtListPrevAddr, 8);
+    DPRINTF(TcaMem, "rtListAddr1, read prev info, vaddr:"
+                        "%#x, data: %#x.\n", rtListAddr1, *rtListPrevAddr);
+    // new->next , tnapi_addr + 0x180
+    Addr rtListAddr2 = tnapi_addr + 0x180;
+    // new->prev , tnapi_addr + 0x180 + 0x8
+    Addr rtListAddr3 = tnapi_addr + 0x180 + 0x8;
+    // prev->next, head->prev->next
+    Addr rtListAddr4 = *rtListPrevAddr;
 
-    uint64_t *rtListData1 =  new uint64_t(0xffffff8001d1cf80);
-    uint64_t *rtListData2 =  new uint64_t(0xffffff807fb9d4b0);
-    uint64_t *rtListData3 =  new uint64_t(0xffffff807fb9d4b0);
-    uint64_t *rtListData4 =  new uint64_t(0xffffff8001d1cf80);
+    uint64_t *rtListData1 =  new uint64_t(tnapi_addr + 0x180);
+    uint64_t *rtListData2 =  new uint64_t(0xffffff807fbb04b0);
+    uint64_t *rtListData3 =  new uint64_t(*rtListPrevAddr);
+    uint64_t *rtListData4 =  new uint64_t(tnapi_addr + 0x180);
 
-    tcaReadMem(rtListAddr1, (uint8_t*)readData, 8);
-    DPRINTF(TcaMem, "rtListAddr1, before write: vaddr:"
-                        "%#x, data: %#x.\n", rtListAddr1, *readData);
-    tcaReadMem(rtListAddr2, (uint8_t*)readData, 8);
-    DPRINTF(TcaMem, "rtListAddr2, before write: vaddr:"
-                        "%#x, data: %#x.\n", rtListAddr2, *readData);
-    tcaReadMem(rtListAddr3, (uint8_t*)readData, 8);
-    DPRINTF(TcaMem, "rtListAddr3, before write: vaddr:"
-                        "%#x, data: %#x.\n", rtListAddr3, *readData);
-    tcaReadMem(rtListAddr4, (uint8_t*)readData, 8);
-    DPRINTF(TcaMem, "rtListAddr4, before write: vaddr:"
-                        "%#x, data: %#x.\n", rtListAddr4, *readData);
+    // tcaReadMem(rtListAddr1, (uint8_t*)readData, 8);
+    // DPRINTF(TcaMem, "rtListAddr1, before write: vaddr:"
+    //                     "%#x, data: %#x.\n", rtListAddr1, *readData);
+    // tcaReadMem(rtListAddr2, (uint8_t*)readData, 8);
+    // DPRINTF(TcaMem, "rtListAddr2, before write: vaddr:"
+    //                     "%#x, data: %#x.\n", rtListAddr2, *readData);
+    // tcaReadMem(rtListAddr3, (uint8_t*)readData, 8);
+    // DPRINTF(TcaMem, "rtListAddr3, before write: vaddr:"
+    //                     "%#x, data: %#x.\n", rtListAddr3, *readData);
+    // tcaReadMem(rtListAddr4, (uint8_t*)readData, 8);
+    // DPRINTF(TcaMem, "rtListAddr4, before write: vaddr:"
+    //                     "%#x, data: %#x.\n", rtListAddr4, *readData);
 
     tcaWriteMem(rtListAddr1, (uint8_t*)rtListData1, 8);
     tcaWriteMem(rtListAddr2, (uint8_t*)rtListData2, 8);
@@ -1068,12 +1083,14 @@ AtomicSimpleCPU:: wakeupNapi(){
 
     // set p->__state to TASK_RUNNING pc 0xffffffc0080a3d40
     *writeData =  0x0;
-    tcaWriteMem(0xffffff8001d1ce10, (uint8_t*)writeData, 4);
-    tcaReadMem(0xffffff8001d1ce10, (uint8_t*)readData, 4);
+    // tnapi_addr + 0x10
+    tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
+    // tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4);
 
     //task_struct->on_rq, ffffffc0080a3e38
     *writeData =  0x1;
-    tcaWriteMem(0xffffff8001d1ce60, (uint8_t*)writeData, 4);
+    // tnapi_addr + 0x60
+    tcaWriteMem(tnapi_addr + 0x60, (uint8_t*)writeData, 4);
 }
 
 void
@@ -1081,6 +1098,7 @@ AtomicSimpleCPU:: tcaProcess(){
     // first read in eth1000 , to ethernet part
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
+    uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
     // first read to gic get irq number
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
@@ -1116,7 +1134,7 @@ AtomicSimpleCPU:: tcaProcess(){
     DPRINTF(TcaMem, "napi_struct->state after. read: %#x.\n", *readData);
 
     // pc 0xffffffc0086cb96c
-    tcaReadMem(0xffffff8001d1ce10, (uint8_t*)readData, 4);
+    tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4); // tnapi_addr + 0x10
     DPRINTF(TcaMem, "read task_struct.__state, read: %#x.\n", *readData);
 
     if ( !(*(uint8_t*)readData & 0x1)){
@@ -1133,7 +1151,7 @@ AtomicSimpleCPU:: tcaProcess(){
     }
 
     // pc 0xffffffc0086cb96c
-    tcaReadMem(0xffffff8001d1ce10, (uint8_t*)readData, 4);
+    tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4);
     if ( *(uint8_t*)readData & 0x3)
         wakeupNapi();
     else
