@@ -273,6 +273,7 @@ BaseSimpleCPU::checkForInterrupts()
 
             if (tc->getCpuPtr()->isTCAFlagSet()) {
                 thread->getCpuPtr()->tcaProcess();
+                t_info.execContextStats.numTcaExes++;
                 thread->getCpuPtr()->resetTCAFlag();
                 return;
             }

@@ -98,6 +98,8 @@ class SimpleExecContext : public ExecContext
                        "Number of float alu accesses"),
               ADD_STAT(numVecAluAccesses, statistics::units::Count::get(),
                        "Number of vector alu accesses"),
+              ADD_STAT(numTcaExes, statistics::units::Count::get(),
+                       "Number of tca processed"),
               ADD_STAT(numCallsReturns, statistics::units::Count::get(),
                        "Number of times a function call or return occured"),
               ADD_STAT(numCondCtrlInsts, statistics::units::Count::get(),
@@ -221,6 +223,9 @@ class SimpleExecContext : public ExecContext
 
         // Number of vector alu accesses
         statistics::Scalar numVecAluAccesses;
+
+        // Number of tca prossed
+        statistics::Scalar numTcaExes;
 
         // Number of function calls/returns
         statistics::Scalar numCallsReturns;
