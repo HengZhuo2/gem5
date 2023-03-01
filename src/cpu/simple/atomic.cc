@@ -436,13 +436,13 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
             if (tcaInstSet.find(thread->pcState().instAddr())
                     != tcaInstSet.end()) {
                 DPRINTF(TcaMem, "Done readmem, vaddr: %#x, paddr: %#x,"
-                    "size: %i, data: %p, req->data ptr: %p. \n",
+                    "size: %i, data: %p.\n",
                     frag_addr, req->getPaddr(), size,
-                    *(uint64_t*)data, &data);
+                    *(uint64_t*)data);
             }
             DPRINTF(ArmMem, "Done readmem, vaddr: %#x, paddr: %#x, size: %i,"
-                " data: %p, req->data ptr: %p. \n",
-                frag_addr, req->getPaddr(), size, *(uint64_t*)data, &data);
+                " data: %p.\n",
+                frag_addr, req->getPaddr(), size, *(uint64_t*)data);
 
             panic_if(pkt.isError(), "Data fetch (%s) failed: %s",
                     pkt.getAddrRange().to_string(), pkt.print());
@@ -550,14 +550,14 @@ AtomicSimpleCPU::writeMem(uint8_t *data, unsigned size, Addr addr,
                 if (tcaInstSet.find(thread->pcState().instAddr())
                         != tcaInstSet.end()) {
                     DPRINTF(TcaMem, "Done writemem, vaddr: %#x, paddr: %#x,"
-                        "size: %i, data: %p, data ptr: %p. \n",
+                        "size: %i, data: %p. \n",
                         frag_addr, req->getPaddr(), size,
-                        *(uint64_t*)data, &data);
+                        *(uint64_t*)data);
                 }
                 DPRINTF(ArmMem, "Done writemem, vaddr: %#x, paddr: %#x,"
-                        "size: %i, data: %p, data ptr: %p. \n",
+                        "size: %i, data: %p. \n",
                         frag_addr, req->getPaddr(), size,
-                        *(uint64_t*)data, &data);
+                        *(uint64_t*)data);
                 dcache_access = true;
                 panic_if(pkt.isError(), "Data write (%s) failed: %s",
                         pkt.getAddrRange().to_string(), pkt.print());
@@ -693,8 +693,8 @@ AtomicSimpleCPU::tcaReadMem(Addr addr, uint8_t* data, unsigned size)
 
         dcache_latency += sendPacket(dcachePort, &pkt);
         DPRINTF(TcaMem, "Done tcaReadMem, vaddr: %#x, paddr: %#x, size: %i,"
-                " data: %p, data ptr: %p. \n",
-                addr, req->getPaddr(), size, *(uint64_t*)data, &data);
+                " data: %p. \n",
+                addr, req->getPaddr(), size, *(uint64_t*)data);
         dcache_access = true;
         panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
                 pkt.getAddrRange().to_string(), pkt.print());
@@ -731,8 +731,8 @@ AtomicSimpleCPU::tcaWriteMem(Addr addr, uint8_t* data, unsigned size)
 
         dcache_latency += sendPacket(dcachePort, &pkt);
         DPRINTF(TcaMem, "Done tcaWriteMem, vaddr: %#x, paddr: %#x, size: %i,"
-                " data: %p, data ptr: %p. \n",
-                addr, req->getPaddr(), size, *(uint64_t*)data, &data);
+                " data: %p. \n",
+                addr, req->getPaddr(), size, *(uint64_t*)data);
         dcache_access = true;
         panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
                 pkt.getAddrRange().to_string(), pkt.print());
@@ -832,14 +832,7 @@ AtomicSimpleCPU::tick()
                         curStaticInst->disassemble(
                             thread->pcState().instAddr()));
                 }
-                // if (thread->pcState().instAddr() == 0xffffffc0080120e8) {
-                    // if (thread->getCpuPtr()->isTCAFlagSet()) {
-                        // DPRINTF(TcaMisc, "TCA flag set, do work now.\n");
-                        // tcaProcess();
-                        // DPRINTF(TcaMisc, "TCA done, reset now.\n");
-                        // thread->getCpuPtr()->resetTCAFlag();
-                //     }
-                // }
+
                 fault = curStaticInst->execute(&t_info, traceData);
 
                 // keep an instruction count
@@ -935,11 +928,11 @@ AtomicSimpleCPU:: wakeupNapi(){
 
     SimpleExecContext &t_info = *threadInfo[curThread];
     SimpleThread *thread = t_info.thread;
-
-    uint64_t* readData = new uint64_t(100);
-    // some states clean up due to modifying the running queue list
-    uint64_t* writeData = new uint64_t(100);
     RegVal currenTask = thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
+
+    // some states clean up due to modifying the running queue list
+    uint64_t* readData = new uint64_t(100);
+    uint64_t* writeData = new uint64_t(100);
     // pc 0xffffffc0080a55c0
     uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
     if (currenTask == tnapi_addr) {
@@ -947,13 +940,11 @@ AtomicSimpleCPU:: wakeupNapi(){
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
         // task_struct->__state
-        // tnapi_addr + 0x10
         tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
         return;
     }
 
     // task_struct->on_rq, 0xffffffc0080a5654
-    // tnapi_addr + 0x60
     tcaReadMem(tnapi_addr + 0x60, (uint8_t*)readData, 4);
     if ( *(uint8_t*)readData && 0x1) {
         // in ttwu_do_wakeup logic, we do not do task_woken
@@ -1038,9 +1029,9 @@ AtomicSimpleCPU:: wakeupNapi(){
     tcaReadMem(rtListAddr1, (uint8_t*)rtListPrevAddr, 8);
     DPRINTF(TcaMem, "rtListAddr1, read prev info, vaddr:"
                         "%#x, data: %#x.\n", rtListAddr1, *rtListPrevAddr);
-    // new->next , tnapi_addr + 0x180
+    // new->next
     Addr rtListAddr2 = tnapi_addr + 0x180;
-    // new->prev , tnapi_addr + 0x180 + 0x8
+    // new->prev
     Addr rtListAddr3 = tnapi_addr + 0x180 + 0x8;
     // prev->next, head->prev->next
     Addr rtListAddr4 = *rtListPrevAddr;
@@ -1049,19 +1040,6 @@ AtomicSimpleCPU:: wakeupNapi(){
     uint64_t *rtListData2 =  new uint64_t(0xffffff807fbb04b0);
     uint64_t *rtListData3 =  new uint64_t(*rtListPrevAddr);
     uint64_t *rtListData4 =  new uint64_t(tnapi_addr + 0x180);
-
-    // tcaReadMem(rtListAddr1, (uint8_t*)readData, 8);
-    // DPRINTF(TcaMem, "rtListAddr1, before write: vaddr:"
-    //                     "%#x, data: %#x.\n", rtListAddr1, *readData);
-    // tcaReadMem(rtListAddr2, (uint8_t*)readData, 8);
-    // DPRINTF(TcaMem, "rtListAddr2, before write: vaddr:"
-    //                     "%#x, data: %#x.\n", rtListAddr2, *readData);
-    // tcaReadMem(rtListAddr3, (uint8_t*)readData, 8);
-    // DPRINTF(TcaMem, "rtListAddr3, before write: vaddr:"
-    //                     "%#x, data: %#x.\n", rtListAddr3, *readData);
-    // tcaReadMem(rtListAddr4, (uint8_t*)readData, 8);
-    // DPRINTF(TcaMem, "rtListAddr4, before write: vaddr:"
-    //                     "%#x, data: %#x.\n", rtListAddr4, *readData);
 
     tcaWriteMem(rtListAddr1, (uint8_t*)rtListData1, 8);
     tcaWriteMem(rtListAddr2, (uint8_t*)rtListData2, 8);
@@ -1083,13 +1061,10 @@ AtomicSimpleCPU:: wakeupNapi(){
 
     // set p->__state to TASK_RUNNING pc 0xffffffc0080a3d40
     *writeData =  0x0;
-    // tnapi_addr + 0x10
     tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
-    // tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4);
 
     //task_struct->on_rq, ffffffc0080a3e38
     *writeData =  0x1;
-    // tnapi_addr + 0x60
     tcaWriteMem(tnapi_addr + 0x60, (uint8_t*)writeData, 4);
 }
 
@@ -1138,7 +1113,7 @@ AtomicSimpleCPU:: tcaProcess(){
     DPRINTF(TcaMem, "napi_struct->state after. read: %#x.\n", *readData);
 
     // pc 0xffffffc0086cb96c
-    tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4); // tnapi_addr + 0x10
+    tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "read task_struct.__state, read: %#x.\n", *readData);
 
     if ( !(*(uint8_t*)readData & 0x1)){

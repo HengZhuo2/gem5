@@ -267,13 +267,16 @@ BaseSimpleCPU::checkForInterrupts()
                     interrupt->name());
                 return;
             }
-            DPRINTF(TcaMisc, "checkInterrupts returns true,"
-                "going to invoke, thread[%i], tca:%i.\n"
-                ,curThread,tc->getCpuPtr()->isTCAFlagSet());
+            // DPRINTF(TcaMisc, "checkInterrupts returns true,"
+            //     "going to invoke, thread[%i], tca:%i.\n"
+            //     ,curThread,tc->getCpuPtr()->isTCAFlagSet());
+
 
             if (tc->getCpuPtr()->isTCAFlagSet()) {
+                DPRINTF(TcaMisc, "TCA processing\n");
                 thread->getCpuPtr()->tcaProcess();
                 t_info.execContextStats.numTcaExes++;
+                DPRINTF(TcaMisc, "TCA processed, reset tcaFlag\n");
                 thread->getCpuPtr()->resetTCAFlag();
                 return;
             }
