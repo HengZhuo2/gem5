@@ -1074,6 +1074,7 @@ AtomicSimpleCPU:: tcaProcess(){
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
     uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+
     // first read to gic get irq number
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
@@ -1082,10 +1083,18 @@ AtomicSimpleCPU:: tcaProcess(){
         DPRINTF(TcaMem, "should read 0x65, but it is not, return.\n");
         return;
     }
+    // then check no one have the runqueue lock rq->lock
+    tcaReadMem(0xffffff807fbaff40, (uint8_t*)readData, 4);
+    DPRINTF(TcaMem, "check rq->lock read done. read: %#x.\n", *readData);
+    if (*readData == 0x1) {
+        DPRINTF(TcaMem, "should read 0x0, but it is not, return.\n");
+        return;
+    }
     // ethernet.read.1, pc ffffffc00851644c
     tcaReadMem(0xffffffc0093800c0, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "first tca-eth read done. read: %#x.\n", *readData);
     *writeData = -1;
+
     // ethernet.write.1, mask all future irqs, pc ffffffc008516498
     tcaWriteMem(0xffffffc0093800d8, (uint8_t*)writeData, 4);
     // tcaReadMem(0xffffffc0092000d8, readData, 4); // check write to ethernet
