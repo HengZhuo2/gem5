@@ -243,7 +243,7 @@ class BaseCPU : public ClockedObject
 
     bool tcaFlag = false;
     bool tcaReady = false;
-    virtual void tcaProcess(){
+    virtual int tcaProcess(){
       panic("tcaProcess() is not implemented");
     };
     void setTCAFlag(){

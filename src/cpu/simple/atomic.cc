@@ -923,7 +923,7 @@ AtomicSimpleCPU::printAddr(Addr a)
     dcachePort.printAddr(a);
 }
 
-void
+int
 AtomicSimpleCPU:: wakeupNapi(){
 
     SimpleExecContext &t_info = *threadInfo[curThread];
@@ -936,12 +936,12 @@ AtomicSimpleCPU:: wakeupNapi(){
     // pc 0xffffffc0080a55c0
     uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
     if (currenTask == tnapi_addr) {
-        DPRINTF(TcaMem, "try_to_wake_up but p == curr,"
+        DPRINTF(TcaMisc, "try_to_wake_up but p == curr,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
         // task_struct->__state
         tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
-        return;
+        return 2;
     }
 
     // task_struct->on_rq, 0xffffffc0080a5654
@@ -949,11 +949,11 @@ AtomicSimpleCPU:: wakeupNapi(){
     if ( *(uint8_t*)readData && 0x1) {
         // in ttwu_do_wakeup logic, we do not do task_woken
         // nor idle_stamp(none for rt)
-        DPRINTF(TcaMem, "try_to_wake_up but p.on_rq is set,"
+        DPRINTF(TcaMisc, "try_to_wake_up but p.on_rq is set,"
             "set p->__state to TASK_RUNNING then return.");
         *writeData =  0x0;
         tcaWriteMem(tnapi_addr + 0x10, (uint8_t*)writeData, 4);
-        return;
+        return 2;
     }
     // rt.read.4 , read __set_bit prio, pc 0xffffffc0080b71f8
     tcaReadMem(0xffffff807fbb0140, (uint8_t*)readData, 8);
@@ -1066,29 +1066,35 @@ AtomicSimpleCPU:: wakeupNapi(){
     //task_struct->on_rq, ffffffc0080a3e38
     *writeData =  0x1;
     tcaWriteMem(tnapi_addr + 0x60, (uint8_t*)writeData, 4);
+    return 1;
 }
 
-void
+int
 AtomicSimpleCPU:: tcaProcess(){
     // first read in eth1000 , to ethernet part
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
     uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
 
+    int tcaReturn = 2;
+
+    // then check no one have the runqueue lock rq->lock
+    tcaReadMem(0xffffff807fbaff40, (uint8_t*)readData, 4);
+    // DPRINTF(TcaMem, "check rq->lock read done. read: %#x.\n", *readData);
+    if (*readData == 0x1) {
+        DPRINTF(TcaMisc, "rq lock should read 0x0, but it is %#x,
+            skip and return.\n", *readData);
+        return 0;
+    }
+
     // first read to gic get irq number
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
-    DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
-    if (*readData != 0x65) {
-        DPRINTF(TcaMem, "should read 0x65, but it is not, return.\n");
-        return;
-    }
-    // then check no one have the runqueue lock rq->lock
-    tcaReadMem(0xffffff807fbaff40, (uint8_t*)readData, 4);
-    DPRINTF(TcaMem, "check rq->lock read done. read: %#x.\n", *readData);
-    if (*readData == 0x1) {
-        DPRINTF(TcaMem, "should read 0x0, but it is not, return.\n");
-        return;
+    // DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
+    if (*readData != 0x65 && *readData != 0x64) {
+        DPRINTF(TcaMisc, "gic should read 0x65 or 0x64, but it is %#x,
+            skip and return.\n", *readData);
+        return 0;
     }
     // ethernet.read.1, pc ffffffc00851644c
     tcaReadMem(0xffffffc0093800c0, (uint8_t*)readData, 4);
@@ -1126,7 +1132,7 @@ AtomicSimpleCPU:: tcaProcess(){
     DPRINTF(TcaMem, "read task_struct.__state, read: %#x.\n", *readData);
 
     if ( !(*(uint8_t*)readData & 0x1)){
-        DPRINTF(TcaMem, "task_struct.__state is not TASK_INTERRUPTIBLE,"
+        DPRINTF(TcaMisc, "task_struct.__state is not TASK_INTERRUPTIBLE,"
                 "set NAPI_STATE_SCHED_THREADED\n");
         // ethernet.read.1 , read napi_struct->state , pc 0xffffffc0086cb97c
         tcaReadMem(0xffffff8001026b00, (uint8_t*)readData, 8);
@@ -1141,9 +1147,9 @@ AtomicSimpleCPU:: tcaProcess(){
     // pc 0xffffffc0086cb96c
     tcaReadMem(tnapi_addr + 0x10, (uint8_t*)readData, 4);
     if ( *(uint8_t*)readData & 0x3)
-        wakeupNapi();
+        tcaReturn = wakeupNapi();
     else
-        DPRINTF(TcaMem, "task_struct.__state is 0,"
+        DPRINTF(TcaMisc, "task_struct.__state is 0,"
                 "means TASK_RUNNING, dont add again.\n");
 
     *writeData = 0x65;
@@ -1152,5 +1158,7 @@ AtomicSimpleCPU:: tcaProcess(){
     // gic.read.2 , read eoi, clearing it , pc 0xffffffc0083ccf10
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
     DPRINTF(TcaMem, "second tca-gic read done. read: %#x.\n", *readData);
+
+    return tcaReturn;
 }
 } // namespace gem5
