@@ -274,11 +274,14 @@ BaseSimpleCPU::checkForInterrupts()
 
             if (tc->getCpuPtr()->isTCAFlagSet()) {
                 DPRINTF(TcaMisc, "TCA processing\n");
-                thread->getCpuPtr()->tcaProcess();
-                t_info.execContextStats.numTcaExes++;
-                DPRINTF(TcaMisc, "TCA processed, reset tcaFlag\n");
+                int tcaRet = thread->getCpuPtr()->tcaProcess();
                 thread->getCpuPtr()->resetTCAFlag();
+                if (tcaRet) {
+                t_info.execContextStats.numTcaExes++;
+                    DPRINTF(TcaMisc, "TCA processed normal, done\n");
                 return;
+                }
+                DPRINTF(TcaMisc, "TCA processed abnormal, skip.\n");
             }
             t_info.fetchOffset = 0;
             interrupts[curThread]->updateIntrInfo(); // nothing for arm
