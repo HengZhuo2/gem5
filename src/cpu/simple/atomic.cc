@@ -1082,8 +1082,8 @@ AtomicSimpleCPU:: tcaProcess(){
     tcaReadMem(0xffffff807fbaff40, (uint8_t*)readData, 4);
     // DPRINTF(TcaMem, "check rq->lock read done. read: %#x.\n", *readData);
     if (*readData == 0x1) {
-        DPRINTF(TcaMisc, "rq lock should read 0x0, but it is %#x,
-            skip and return.\n", *readData);
+        DPRINTF(TcaMisc, "rq lock should read 0x0, but it is %#x, "
+            "skip and return.\n", *readData);
         return 0;
     }
 
@@ -1092,8 +1092,8 @@ AtomicSimpleCPU:: tcaProcess(){
     tcaReadMem(0xffffffc00800d00c, (uint8_t*)readData, 4);
     // DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
     if (*readData != 0x65 && *readData != 0x64) {
-        DPRINTF(TcaMisc, "gic should read 0x65 or 0x64, but it is %#x,
-            skip and return.\n", *readData);
+        DPRINTF(TcaMisc, "gic should read 0x65 or 0x64, but it is %#x, "
+            "skip and return.\n", *readData);
         return 0;
     }
     // ethernet.read.1, pc ffffffc00851644c
