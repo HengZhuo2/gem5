@@ -362,10 +362,10 @@ class Execute : public Named
     RequestPtr data_tca_req;
     Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
     Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
-    void wakeupNapi();
+    int wakeupNapi();
     bool tcaCheck();
-    void tcaProcess();
-    // std::map<Addr, std::string> tcaInstSet;
+    int tcaProcess();
+    std::map<Addr, std::string> tcaInstSet;
 };
 
 } // namespace minor
