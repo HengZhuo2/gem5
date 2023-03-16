@@ -269,7 +269,6 @@ class AtomicSimpleCPU : public BaseSimpleCPU
     // uint8_t * getBaseAddr(){return baseAddr; }
     // uint8_t * getHostAddr(Addr askAddr);
     int wakeupNapi();
-    bool tcaCheck();
     int tcaProcess() override;
     std::map<Addr, std::string> tcaInstSet;
 };

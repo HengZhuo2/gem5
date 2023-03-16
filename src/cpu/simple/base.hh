@@ -118,6 +118,7 @@ class BaseSimpleCPU : public BaseCPU
         DcacheRetry,
         DcacheWaitResponse,
         DcacheWaitSwitch,
+        tcaWaiting,
     };
 
     Status _status;
@@ -134,6 +135,7 @@ class BaseSimpleCPU : public BaseCPU
 
   public:
     void checkForInterrupts();
+    bool tcaCheck();
     void setupFetchRequest(const RequestPtr &req);
     void serviceInstCountEvents();
     void preExecute();

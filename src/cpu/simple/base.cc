@@ -271,24 +271,48 @@ BaseSimpleCPU::checkForInterrupts()
             //     "going to invoke, thread[%i], tca:%i.\n"
             //     ,curThread,tc->getCpuPtr()->isTCAFlagSet());
 
-
-            if (tc->getCpuPtr()->isTCAFlagSet()) {
-                DPRINTF(TcaMisc, "TCA processing\n");
-                int tcaRet = thread->getCpuPtr()->tcaProcess();
-                thread->getCpuPtr()->resetTCAFlag();
-                if (tcaRet) {
-                t_info.execContextStats.numTcaExes++;
-                    DPRINTF(TcaMisc, "TCA processed normal, done\n");
-                return;
-                }
-                DPRINTF(TcaMisc, "TCA processed abnormal, skip.\n");
-            }
+            // if (tc->getCpuPtr()->isTCAFlagSet()) {
+            //     DPRINTF(TcaMisc, "TCA processing\n");
+            //     int tcaRet = thread->getCpuPtr()->tca.process();
+            //     thread->getCpuPtr()->resetTCAFlag();
+            //     if (tcaRet) {
+            //         t_info.execContextStats.numTcaExes++;
+            //         DPRINTF(TcaMisc, "TCA processed normal, done\n");
+            //         return;
+            //     }
+            //     DPRINTF(TcaMisc, "TCA processed abnormal, skip.\n");
+            // }
+            DPRINTF(TcaMisc, "checkForInterrupts normal path.\n");
             t_info.fetchOffset = 0;
             interrupts[curThread]->updateIntrInfo(); // nothing for arm
             interrupt->invoke(tc);
             thread->decoder->reset();
         }
     }
+}
+
+bool
+BaseSimpleCPU::tcaCheck()
+{
+    SimpleExecContext&t_info = *threadInfo[curThread];
+    SimpleThread* thread = t_info.thread;
+    ThreadContext* tc = thread->getTC();
+
+    if (checkInterrupts(curThread)) {
+        if (t_info.inHtmTransactionalState()) {
+            DPRINTF(TcaMisc, "but in transcation, dont do it.\n");
+            return 0;
+        }
+        // if (curTick() == 15897813137500) {
+        //     tc->getCpuPtr()->resetTCAFlag();
+        //     DPRINTF(TcaMisc, "TCA debug, reset.\n");
+        // }
+        if (tc->getCpuPtr()->isTCAFlagSet()) {
+            DPRINTF(TcaMisc, "TCA ready found, lets do it.\n");
+            return 1;
+        }
+    }
+    return 0;
 }
 
 
