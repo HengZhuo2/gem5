@@ -94,6 +94,27 @@ AtomicSimpleCPU::init()
     tcaInstSet[0xffffffc0083ccf10] = "gic read reg";
     tcaInstSet[0xffffffc00851644c] = "ethernet read reg";
     tcaInstSet[0xffffff800190db10] = "read state";
+
+    tcaInstSet[0xffffffc0086ca4e0] = "read napi_struct->state ";
+    tcaInstSet[0xffffffc0086ca4ec] = "napi_struct->state | 0x1 ";
+
+    tcaInstSet[0xffffffc0086cb96c] = "read task_struct.__state";
+    tcaInstSet[0xffffffc0086cb978] = "set napi_struct->state";
+
+    tcaInstSet[0xffffffc0080a55ec] = "unknown read ";
+
+    tcaInstSet[0xffffffc0086cb980] = "going into setbit";
+    tcaInstSet[0xffffffc0086cb984] = "return from setbit";
+
+    tcaInstSet[0xffffffc0080a5578] = "try_to_wake_up";
+
+    tcaInstSet[0xffffffc0087e0838] = "_raw_spin_lock";
+    tcaInstSet[0xffffffc0080a2188] = "raw_spin_rq_lock_nested";
+    tcaInstSet[0xffffffc0080a22c0] = "__task_rq_lock";
+    tcaInstSet[0xffffffc0080a2378] = "task_rq_lock";
+    tcaInstSet[0xffffffc0080a2230] = "raw_spin_rq_unlock";
+    tcaInstSet[0xffffffc0087e086c] = "casa locking";
+    tcaInstSet[0xffffffc0087e0030] = "unlocking";
     // write 2 at a time
     tcaInstSet[0xffffffc0085164c8] = "write total_tx_bytes, total_tx_packets";
     tcaInstSet[0xffffffc0085164d0] = "write total_rx_bytes, total_rx_packets";
@@ -774,10 +795,23 @@ AtomicSimpleCPU::tick()
         updateCycleCounters(BaseCPU::CPU_STATE_ON);
 
         if (!curStaticInst || !curStaticInst->isDelayedCommit()) {
-            checkForInterrupts();
-            checkPcEventQueue();
+            if (tcaCheck()){
+                int tcaRet = thread->getCpuPtr()->tcaProcess();
+                thread->getCpuPtr()->resetTCAFlag();
+                DPRINTF(TcaMisc, "TCA resetTCAFlag.\n");
+                if (tcaRet) {
+                    t_info.execContextStats.numTcaExes++;
+                    DPRINTF(TcaMisc, "TCA process normal, done.\n");
+                }else {
+                    DPRINTF(TcaMisc, "TCA process abonormal, back to CPU.\n");
+                    checkForInterrupts();
+                    checkPcEventQueue();
+                }
+            } else {
+                checkForInterrupts();
+                checkPcEventQueue();
+            }
         }
-
         // We must have just got suspended by a PC event
         if (_status == Idle) {
             tryCompleteDrain();
@@ -934,7 +968,8 @@ AtomicSimpleCPU:: wakeupNapi(){
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
     // pc 0xffffffc0080a55c0
-    uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+    // uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+    uint64_t tnapi_addr = 0xffffff8001d1db00;
     if (currenTask == tnapi_addr) {
         DPRINTF(TcaMisc, "try_to_wake_up but p == curr,"
             "set p->__state to TASK_RUNNING then return.");
@@ -1074,7 +1109,8 @@ AtomicSimpleCPU:: tcaProcess(){
     // first read in eth1000 , to ethernet part
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
-    uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+    // uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+    uint64_t tnapi_addr = 0xffffff8001d1db00;
 
     int tcaReturn = 2;
 
