@@ -253,6 +253,117 @@ class TimingSimpleCPU : public BaseSimpleCPU
 
     };
 
+    class TCA
+    {
+      public:
+        struct tcaInst
+        {
+          Addr addr;
+          bool read;
+          uint64_t *data;
+          unsigned size;
+          bool check;
+          uint64_t checkValue;
+        };
+        RegVal currenTask;
+      protected:
+        TimingSimpleCPU *cpu;
+        std::string _name;
+        int _state;
+        std::vector<tcaInst> tcaInstList;
+        Addr *listpreAddr;
+        uint64_t* gic_read1;
+        uint64_t* tempData4;
+        uint64_t* tempData8;
+      public:
+        TCA(TimingSimpleCPU *_cpu)
+            : cpu(_cpu)
+        {
+          _name = cpu->name() + ".tca";
+          _state = 0;
+          uint64_t tnapiBase = 0xffffff8001d1ce00;
+          gic_read1 = new uint64_t(6666);
+          tempData4 = new uint64_t(6666);
+          tempData8 = new uint64_t(6666);
+          listpreAddr = new Addr(6666);
+          tcaInstList = std::vector<tcaInst>(40);
+
+          uint64_t* fix1 = new uint64_t(0x1);
+          uint64_t* fix0 = new uint64_t(0x0);
+          uint64_t* fixf = new uint64_t(0xffff);
+          // gic read
+          tcaInstList[0]={0xffffffc00800d00c, true, gic_read1, 4, false, 0x65};
+          // eth read/write/read
+          tcaInstList[1]={0xffffffc0093800c0, true, nullptr, 4, false, 0};
+          tcaInstList[2]={0xffffffc0093800d8, false, fixf, 4, false, 0};
+          tcaInstList[3]={0xffffffc009380008, true, nullptr, 4, false, 0};
+          // process write total_tx_bytes/total_rx_bytes
+          tcaInstList[4]={0xffffff8001026a60, false, fix0, 8, false, 0};
+          tcaInstList[5]={0xffffff8001026a68, false, fix0, 8, false, 0};
+          // napi_struct->state read/write
+          // special case, need atomic write |1
+          tcaInstList[6]={0xffffff8001026b00, true, nullptr, 8, false, 0};
+          tcaInstList[7]={tnapiBase + 0x10, true, tempData4, 4, false, 0};
+
+          // only take if tnapi_state is 0, means running
+          // update napi_struct_state | 0x200 then return;
+          tcaInstList[8]={0xffffff8001026b00, true, tempData8, 8, false, 0};
+          tcaInstList[9]={0xffffff8001026b00, false, tempData8, 8, false, 0};
+
+          //inside wakeupNapi, condition check, skip if currenTask or on_rq
+          tcaInstList[10]={tnapiBase, true, tempData4, 4, false, 0};
+          tcaInstList[11]={tnapiBase + 0x60, true, tempData4, 4, false, 0};
+          // // rt_se->on_rq, rt_se->on_list, no control flow,
+          // // tnapiBase + 0x1a4 and tnapiBase + 0x1a6
+          // updating rq->curr->flags TIF_NEED_RESCHED | 0x2;
+          tcaInstList[12]={0xffffff800109a700, true, tempData4, 4, false, 0};
+          tcaInstList[13]={0xffffff800109a700, false, tempData4, 4, false, 0};
+          // read then + 1 writeback, rq->nr_running, rq->rt_nr_running
+          tcaInstList[14]={0xffffff807fbaff44, true, tempData4, 4, false, 0};
+          tcaInstList[15]={0xffffff807fbaff44, false, tempData4, 4, false, 0};
+          tcaInstList[16]={0xffffff807fbb0790, true, tempData4, 4, false, 0};
+          tcaInstList[17]={0xffffff807fbb0790, false, tempData4, 4, false, 0};
+
+          // step 18: rq->rt_queued
+          tcaInstList[18]={0xffffff807fbb07c0, false, fix1, 4, false, 0};
+
+          // step 19, 20: update priority
+          tcaInstList[19]={0xffffff807fbb0140, true, tempData8, 8, false, 0};
+          tcaInstList[20]={0xffffff807fbb0140, false, tempData8, 8, false, 0};
+
+          // step 21, 22: rt_se->on_list, rt_se->on_rq set to 1
+          tcaInstList[21]={tnapiBase + 0x1a6, false, fix1, 2, false, 0};
+          tcaInstList[22]={tnapiBase + 0x1a4, false, fix1, 2, false, 0};
+
+          // step 23, 24,25,26,27: read and modify list
+          uint64_t* tnapiAddr = new uint64_t(tnapiBase + 0x180);
+          uint64_t* listAddr = new uint64_t(0xffffff807fbb04b0);
+          tcaInstList[23]={0xffffff807fbb04b8, true, listpreAddr, 8, false, 0};
+          tcaInstList[24]={0xffffff807fbb04b8, false, tnapiAddr, 8, false, 0};
+          tcaInstList[25]={tnapiBase+0x180, false, listAddr, 8, false, 0};
+          tcaInstList[26]={tnapiBase+0x188, false, listpreAddr, 8, false, 0};
+          tcaInstList[27]={*listpreAddr, false, tnapiAddr, 8, false, 0};
+
+          // step 28, task_struct->on_rq to 1
+          tcaInstList[28]={tnapiBase + 0x60, false, fix1, 4, false, 0};
+          // step 29, p->__state to TASK_RUNNING, steps 6,7 can skips to here
+          tcaInstList[29]={tnapiBase + 0x10, false, fix0, 4, false, 0};
+          // step 30, 31
+          tcaInstList[30]={0xffffffc00800d010, false, gic_read1, 4, false, 0};
+          tcaInstList[31]={0xffffffc00800d00c, true, nullptr, 4, false, 0x3ff};
+        }
+
+        // void init();
+        const std::string &name() const { return _name;}
+        int process(PacketPtr pkt);
+        int initProcess();
+        int wakeupNapi();
+        int tcaStateGet() {return _state;}
+        void tcaStateInc() { _state++;};
+        void tcaStateSet(int nextState) { _state=nextState;};
+        void tcaStateReset() { _state=0;};
+        bool tcaWorking() { return _state != 0;};
+    };
     void updateCycleCounts();
 
     IcachePort icachePort;
@@ -262,6 +373,7 @@ class TimingSimpleCPU : public BaseSimpleCPU
     PacketPtr dcache_pkt;
 
     Cycles previousCycle;
+    TCA tca;
 
   protected:
 
@@ -373,6 +485,12 @@ class TimingSimpleCPU : public BaseSimpleCPU
      * @returns true if the CPU is drained, false otherwise.
      */
     bool tryCompleteDrain();
+
+    Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaReadMemTiming(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaWriteMemTiming(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
+    std::map<Addr, std::string> tcaInstSet;
 };
 
 } // namespace gem5

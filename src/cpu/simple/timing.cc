@@ -51,6 +51,11 @@
 #include "debug/HtmCpu.hh"
 #include "debug/Mwait.hh"
 #include "debug/SimpleCPU.hh"
+#include "debug/TcaInst.hh"
+#include "debug/TcaMem.hh"
+#include "debug/TcaMisc.hh"
+#include "debug/TimingCPU.hh"
+#include "debug/TimingMem.hh"
 #include "mem/packet.hh"
 #include "mem/packet_access.hh"
 #include "params/BaseTimingSimpleCPU.hh"
@@ -65,6 +70,28 @@ void
 TimingSimpleCPU::init()
 {
     BaseSimpleCPU::init();
+
+    tcaInstSet[0xffffffc008010a80] = "<vector>";
+    tcaInstSet[0xffffffc0080112e4] = "el1h_64_irq";
+    tcaInstSet[0xffffffc008516438] = "e1000_intr";
+    tcaInstSet[0xffffffc0086cb920] = "__napi_schedule";
+    tcaInstSet[0xffffffc0080b7138] = "enqueue_task_rt";
+    tcaInstSet[0xffffffc0080b71d0] = "CORE, rtListAdd1";
+    tcaInstSet[0xffffffc0080b71d4] = "CORE, rtListAdd2";
+    tcaInstSet[0xffffffc0080b71d8] = "CORE, rtListAdd3";
+    tcaInstSet[0xffffffc0080b71dc] = "CORE, rtListAdd4";
+    tcaInstSet[0xffffffc00801207c] = "<ret_to_kernel>";
+    tcaInstSet[0xffffffc0080120e8] = "eret";
+    tcaInstSet[0xffffffc0080b72a4] = "rt_period_active";
+    tcaInstSet[0xffffffc0086d339c] = "napi_threaded_poll";
+    tcaInstSet[0xffffffc0086d3130] = "__napi_poll";
+    tcaInstSet[0xffffffc0080aa818] = "need_resched";
+    tcaInstSet[0xffffffc0083ccf10] = "gic read reg";
+    tcaInstSet[0xffffffc00851644c] = "ethernet read reg";
+    tcaInstSet[0xffffff800190db10] = "read state";
+    // write 2 at a time
+    tcaInstSet[0xffffffc0085164c8] = "write total_tx_bytes, total_tx_packets";
+    tcaInstSet[0xffffffc0085164d0] = "write total_rx_bytes, total_rx_packets";
 }
 
 void
@@ -77,6 +104,7 @@ TimingSimpleCPU::TimingCPUPort::TickEvent::schedule(PacketPtr _pkt, Tick t)
 TimingSimpleCPU::TimingSimpleCPU(const BaseTimingSimpleCPUParams &p)
     : BaseSimpleCPU(p), fetchTranslation(this), icachePort(this),
       dcachePort(this), ifetch_pkt(NULL), dcache_pkt(NULL), previousCycle(0),
+      tca(this),
       fetchEvent([this]{ fetch(); }, name())
 {
     _status = Idle;
@@ -227,7 +255,6 @@ TimingSimpleCPU::activateContext(ThreadID thread_num)
 
     BaseCPU::activateContext(thread_num);
 }
-
 
 void
 TimingSimpleCPU::suspendContext(ThreadID thread_num)
@@ -559,7 +586,8 @@ TimingSimpleCPU::writeMem(uint8_t *data, unsigned size,
 
     // TODO: TimingSimpleCPU doesn't support arbitrarily long multi-line mem.
     // accesses yet
-
+    DPRINTF(TimingMem, "writeMem, vaddr: %#x, size: %i, data: %#x. \n",
+                addr, size, (uint64_t*)newData);
     if (split_addr > addr) {
         RequestPtr req1, req2;
         assert(!req->isLLSC() && !req->isSwap());
@@ -685,7 +713,14 @@ TimingSimpleCPU::fetch()
 
     DPRINTF(SimpleCPU, "Fetch\n");
 
-    if (!curStaticInst || !curStaticInst->isDelayedCommit()) {
+    if ((!curStaticInst || !curStaticInst->isDelayedCommit())
+            && !tca.tcaWorking()) {
+        if (tcaCheck()){
+            tca.currenTask=thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
+            if (tca.initProcess()) {
+                return;
+            }
+        }
         checkForInterrupts();
         checkPcEventQueue();
     }
@@ -838,21 +873,27 @@ TimingSimpleCPU::completeIfetch(PacketPtr pkt)
     if (pkt)
         pkt->req->setAccessLatency();
 
-
     preExecute();
 
     // hardware transactional memory
+    SimpleThread* thread = t_info.thread;
     if (curStaticInst && curStaticInst->isHtmStart()) {
         // if this HtmStart is not within a transaction,
         // then assign it a new htmTransactionUid
         if (!t_info.inHtmTransactionalState())
             t_info.newHtmTransactionUid();
-        SimpleThread* thread = t_info.thread;
         thread->htmTransactionStarts++;
         DPRINTF(HtmCpu, "htmTransactionStarts++=%u\n",
             thread->htmTransactionStarts);
     }
-
+    if (tcaInstSet.find(thread->pcState().instAddr())
+        != tcaInstSet.end()) {
+        DPRINTF(TcaInst, "TcaInst:%s at pc %#x, %s. \n",
+            tcaInstSet[thread->pcState().instAddr()],
+            thread->pcState().instAddr(),
+            curStaticInst->disassemble(
+                thread->pcState().instAddr()));
+    }
     if (curStaticInst && curStaticInst->isMemRef()) {
         // load or store: just send to dcache
         Fault fault = curStaticInst->initiateAcc(&t_info, traceData);
@@ -1139,7 +1180,15 @@ bool
 TimingSimpleCPU::DcachePort::recvTimingResp(PacketPtr pkt)
 {
     DPRINTF(SimpleCPU, "Received load/store response %#x\n", pkt->getAddr());
-
+    // first read to gic get irq number
+    // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
+    // cpu->tcaReadMemTiming(0xffffffc00800d00c, (uint8_t*)readData, 4);
+    // DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
+    if (cpu->tca.tcaWorking()) {
+        DPRINTF(TcaMisc, "recv first read\n");
+        cpu->tca.process(pkt);
+        return true;
+    }
     // The timing CPU is not really ticked, instead it relies on the
     // memory system (fetch and load/store) to set the pace.
     if (!tickEvent.scheduled()) {
@@ -1317,6 +1366,294 @@ TimingSimpleCPU::htmSendAbortSignal(ThreadID tid, uint64_t htm_uid,
     memcpy (data, &rc, size);
 
     sendData(req, data, nullptr, true);
+}
+
+Fault
+TimingSimpleCPU::tcaReadMem(Addr addr, uint8_t* data, unsigned size)
+{
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread* thread = t_info.thread;
+
+    const Addr pc = thread->pcState().instAddr();
+    Request::Flags flags;
+    RequestPtr req = std::make_shared<Request>(
+        addr, size, flags, dataRequestorId(), pc, thread->contextId());
+
+    req->taskId(taskId());
+    req->setVirt(addr, size, flags, dataRequestorId(),
+                 thread->pcState().instAddr());
+    // translate to physical address
+    // Fault fault = NoFault;
+    Fault fault = thread->mmu->translateAtomic(
+        req, thread->getTC(), BaseMMU::Read);
+    // pkt->addr
+    // Now do the access.
+    if (fault == NoFault && !req->getFlags().isSet(Request::NO_ACCESS)) {
+        Packet pkt(req, Packet::makeReadCmd(req));
+        pkt.dataStatic(data);
+        DPRINTF(TcaMem, "tcaReadMem: %#x, %i, %#x\n",
+            addr, size, flags);
+        dcachePort.sendFunctional(&pkt);
+        DPRINTF(TcaMem, "Done tcaReadMem, vaddr: %#x, paddr: %#x, size: %i,"
+                " data: %p. \n",
+                addr, req->getPaddr(), size, *(uint64_t*)data);
+        panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
+                pkt.getAddrRange().to_string(), pkt.print());
+        assert(!req->isLLSC());
+    }
+
+    if (fault != NoFault && req->isPrefetch()) {
+        return NoFault;
+    }
+    //If there's a fault and we're not doing prefetch, return it
+    return fault;
+}
+
+Fault
+TimingSimpleCPU::tcaReadMemTiming(Addr addr, uint8_t* data, unsigned size)
+{
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread* thread = t_info.thread;
+    DPRINTF(TcaMem, "tcaReadMemTiming 1: %#x, %i.\n",
+            addr, size);
+    Fault fault;
+    const Addr pc = thread->pcState().instAddr();
+    BaseMMU::Mode mode = BaseMMU::Read;
+    Request::Flags flags;
+    // DPRINTF(TcaMem, "tcaReadMemTiming 2: %#x, %i, %#x.\n",
+    //         addr, size, flags);
+    RequestPtr req = std::make_shared<Request>(
+        addr, size, flags, dataRequestorId(), pc, thread->contextId());
+    req->taskId(taskId());
+    // req->setVirt(addr, size, flags, dataRequestorId(),
+    //              thread->pcState().instAddr());
+    // DPRINTF(TcaMem, "tcaReadMemTiming 3: %#x, %i, %#x.\n",
+    //         addr, size, flags);
+
+    WholeTranslationState *state =
+        new WholeTranslationState(req, new uint8_t[size], NULL, mode);
+    DataTranslation<TimingSimpleCPU *> *translation
+        = new DataTranslation<TimingSimpleCPU *>(this, state);
+    thread->mmu->translateTiming(req, thread->getTC(), translation, mode);
+    // thread->mmu->translateFunctional(req, thread->getTC(), mode);
+    // DPRINTF(TcaMem, "tcaReadMemTiming: translateTiming done.\n");
+
+    // sendData(req,data,nullptr,1);
+    return fault;
+}
+
+Fault
+TimingSimpleCPU::tcaWriteMemTiming(Addr addr, uint8_t* data, unsigned size)
+{
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread* thread = t_info.thread;
+    DPRINTF(TcaMem, "tcaWriteMemTiming 1: %#x, %i, data: %p.\n",
+            addr, size, *(uint64_t*)data);
+    Fault fault;
+    const Addr pc = thread->pcState().instAddr();
+    BaseMMU::Mode mode = BaseMMU::Write;
+    Request::Flags flags;
+
+    RequestPtr req = std::make_shared<Request>(
+        addr, size, flags, dataRequestorId(), pc, thread->contextId());
+    req->taskId(taskId());
+
+    WholeTranslationState *state =
+        new WholeTranslationState(req, data, NULL, mode);
+    DataTranslation<TimingSimpleCPU *> *translation =
+        new DataTranslation<TimingSimpleCPU *>(this, state);
+    thread->mmu->translateTiming(req, thread->getTC(), translation, mode);
+    // thread->mmu->translateFunctional(req, thread->getTC(), mode);
+    // DPRINTF(TcaMem, "tcaWriteMemTiming: translateTiming done.\n");
+
+    // sendData(req,data,nullptr,1);
+    return fault;
+}
+
+Fault
+TimingSimpleCPU::tcaWriteMem(Addr addr, uint8_t* data, unsigned size)
+{
+    SimpleExecContext &t_info = *threadInfo[curThread];
+    SimpleThread* thread = t_info.thread;
+
+    const Addr pc = thread->pcState().instAddr();
+    Request::Flags flags;
+    RequestPtr req = std::make_shared<Request>(
+        addr, size, flags, dataRequestorId(), pc, thread->contextId());
+
+    req->taskId(taskId());
+    req->setVirt(addr, size, flags, dataRequestorId(),
+                 thread->pcState().instAddr());
+
+    // translate to physical address
+    Fault fault = thread->mmu->translateAtomic(
+        req, thread->getTC(), BaseMMU::Write);
+
+    // Now do the access.
+    if (fault == NoFault && !req->getFlags().isSet(Request::NO_ACCESS)) {
+        Packet pkt(req, Packet::makeWriteCmd(req));
+        pkt.dataStatic(data);
+
+        dcachePort.sendFunctional(&pkt);
+        DPRINTF(TcaMem, "Done tcaWriteMem, vaddr: %#x, paddr: %#x, size: %i,"
+                " data: %p. \n",
+                addr, req->getPaddr(), size, *(uint64_t*)data);
+        panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
+                pkt.getAddrRange().to_string(), pkt.print());
+        assert(!req->isLLSC());
+    }
+
+    if (fault != NoFault && req->isPrefetch()) {
+        return NoFault;
+    }
+    //If there's a fault and we're not doing prefetch, return it
+    return fault;
+}
+
+int
+TimingSimpleCPU::TCA:: initProcess(){
+    DPRINTF(TcaMisc, "initProcess.\n");
+    uint64_t* readData = new uint64_t(100);
+    Fault fault = cpu->tcaReadMem(0xffffff807fbaff40, (uint8_t*)readData, 4);
+    if (fault != NoFault) {
+        DPRINTF(TcaMisc, "initProcess fault 1, skip tca.\n");
+        return 0;
+    }
+    if (*readData == 0x1) {
+        DPRINTF(TcaMisc, "initProcess failed, rq lock is %#x, "
+            "skip and return.\n", *readData);
+        return 0;
+    }
+    uint64_t* writeData = new uint64_t(0x1);
+    cpu->tcaWriteMem(0xffffff807fbaff40, (uint8_t*)writeData, 1);
+    // first read to gic get irq number
+    // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
+    cpu->tcaReadMemTiming(0xffffffc00800d00c, (uint8_t*)readData, 4);
+    DPRINTF(TcaMisc, "initProcess success.\n");
+    tcaStateInc();
+    return 1;
+}
+
+int
+TimingSimpleCPU::TCA:: process(PacketPtr pkt){
+    uint64_t* readData = new uint64_t(6666);
+    uint64_t* writeData = new uint64_t(6666);
+    tcaInst curTcaInst;
+    tcaInst preTcaInst;
+    // uint64_t tnapi_addr = 0xffffff8001d1ce00; // base
+
+    // if read data ptr provided, means we need the read value.
+    preTcaInst = tcaInstList[tcaStateGet()-1];
+    if (preTcaInst.read && preTcaInst.data != nullptr){
+        pkt->writeData((uint8_t*)preTcaInst.data);
+        DPRINTF(TcaMisc, "check step: %i, receive last read, data: %#x.\n",
+            tcaStateGet(), *preTcaInst.data);
+    }
+    // handle some special cases?
+    switch(tcaStateGet()) {
+        // case 0 :
+        //     break;
+        //ethernet.read.1, pc ffffffc00851644c
+        //ethernet.write.1, mask all future irqs, pc ffffffc008516498
+        //ethernet.read.2, read REG_STATUS, pc 0xffffffc0085164a0
+        case 1 :
+            if (*gic_read1 != 0x65){
+                DPRINTF(TcaMisc, "should have be %#x, but not, is %#x.\n",
+                        0x65, *readData);
+                tcaStateReset();
+                cpu->resetTCAFlag();
+                cpu->fetch();
+                return 2;
+            }
+            break;
+        case 7 :
+            pkt->writeData((uint8_t*)readData);
+            *writeData =  *readData | 0x1;
+            // funky set this value in napi_schedule_prep, doing cmpxchg
+            DPRINTF(TcaMisc, "hacking setting napi_struct->state | 0x1.\n");
+            cpu->tcaWriteMem(0xffffff8001026b00, (uint8_t*)writeData, 8);
+            break;
+        case 8 :
+            // has to be 1 and 1 only
+            if ( !(*(uint8_t*)tempData4 == 0x1)){
+                break;
+            } else{
+                tcaStateInc();
+                tcaStateInc(); // skipping 8 and 9
+            }
+            // wakeupNapi();
+            break;
+        case 9 :
+            *tempData8 = *tempData8 | 0x200;
+            break;
+        case 11 :
+            // skip if currenTask
+            if (*tempData4 == currenTask)
+                tcaStateSet(29);
+            break;
+        case 12 :
+            // skip if on_rq
+            if (*tempData4 && 0x1)
+                tcaStateSet(29);
+            break;
+        case 13 :
+            *tempData4 = *tempData4 | 0x2;
+            break;
+        case 15 :
+            *tempData4 = *tempData4 + 1;
+            break;
+        case 17 :
+            *tempData4 = *tempData4 + 1;
+            break;
+        case 20 :
+            *tempData8 = *tempData8 | 0x40000000000000;
+            break;
+        case 24 :
+            tcaInstList[27].addr=*listpreAddr;
+            break;
+        case 31 :
+            if (!cpu->isTCAFlagSet()) {
+                DPRINTF(TcaMisc, "tcaflag is not set, back to CPU.\n");
+                tcaStateReset();
+                cpu->fetch();
+                return 1;
+            }
+            break;
+        case 32 :
+            tcaStateReset();
+            pkt->writeData((uint8_t*)readData);
+            if (*readData != 0x3ff){
+                DPRINTF(TcaMisc, "should have be %#x, but not, is %#x.\n",
+                        0x3ff, *readData);
+                tcaStateInc();
+            } else {
+                DPRINTF(TcaMisc, "TCA done, reset flag, back to CPU.\n");
+                cpu->resetTCAFlag();
+                uint64_t* writeData = new uint64_t(0x0);
+                cpu->tcaWriteMem(0xffffff807fbaff40, (uint8_t*)writeData, 1);
+                cpu->fetch();
+                return 1;
+            }
+            break;
+        default :
+            break;
+    }
+
+    DPRINTF(TcaMisc, "send this step: %i.\n", tcaStateGet());
+    curTcaInst = tcaInstList[tcaStateGet()];
+    if (curTcaInst.read) {
+        cpu->tcaReadMemTiming(curTcaInst.addr, (uint8_t*)curTcaInst.data,
+            curTcaInst.size);
+    }else {
+        cpu->tcaWriteMemTiming(curTcaInst.addr, (uint8_t*)curTcaInst.data,
+            curTcaInst.size);
+    }
+    if (tcaStateGet() == 9) {
+        tcaStateSet(28);
+    }
+    tcaStateInc();
+    // DPRINTF(TcaMisc, "next step: %i.\n", tcaStateGet());
+    return 1;
 }
 
 } // namespace gem5
