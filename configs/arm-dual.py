@@ -70,12 +70,8 @@ cpu_types = {
 
     "atomic" : ( AtomicSimpleCPU, devices.L1I, devices.L1D, None),
     "timing" : ( TimingSimpleCPU, devices.L1I, devices.L1D, devices.L2),
-    "minor" : (MinorCPU,
-               devices.L1I, devices.L1D,
-               devices.L2),
-    "hpi" : ( HPI.HPI,
-              HPI.HPI_ICache, HPI.HPI_DCache,
-              HPI.HPI_L2)
+    "minor" : (MinorCPU, devices.L1I, devices.L1D, devices.L2),
+    "hpi" : ( HPI.HPI, HPI.HPI_ICache, HPI.HPI_DCache, HPI.HPI_L2)
 }
 
 def create_cow_image(name):

@@ -74,7 +74,6 @@ class L2(L2Cache):
     size = '1MB'
     assoc = 16
     write_buffers = 8
-    clusivity='mostly_excl'
 
 
 class L3(Cache):
