@@ -1558,10 +1558,12 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
         //ethernet.read.2, read REG_STATUS, pc 0xffffffc0085164a0
         case 1 :
             if (*gic_read1 != 0x65){
-                DPRINTF(TcaMisc, "should have be %#x, but not, is %#x.\n",
-                        0x65, *readData);
+                DPRINTF(TcaMisc, "should have be %#x, but not, is %#x,"
+                    "resetTCAFlag.\n", 0x65, *readData);
                 tcaStateReset();
                 cpu->resetTCAFlag();
+                *writeData=0;
+                cpu->tcaWriteMem(0xffffff807fbaff40, (uint8_t*)writeData, 1);
                 cpu->fetch();
                 return 2;
             }
@@ -1612,9 +1614,12 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
             tcaInstList[27].addr=*listpreAddr;
             break;
         case 31 :
+            // other interrupts posted, do not handle.
             if (!cpu->isTCAFlagSet()) {
                 DPRINTF(TcaMisc, "tcaflag is not set, back to CPU.\n");
                 tcaStateReset();
+                *writeData=0;
+                cpu->tcaWriteMem(0xffffff807fbaff40, (uint8_t*)writeData, 1);
                 cpu->fetch();
                 return 1;
             }
@@ -1622,14 +1627,15 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
         case 32 :
             tcaStateReset();
             pkt->writeData((uint8_t*)readData);
+            // after case 31, can only mean we have to do tca again
             if (*readData != 0x3ff){
                 DPRINTF(TcaMisc, "should have be %#x, but not, is %#x.\n",
                         0x3ff, *readData);
                 tcaStateInc();
             } else {
-                DPRINTF(TcaMisc, "TCA done, reset flag, back to CPU.\n");
+                DPRINTF(TcaMisc, "TCA done, resetTCAFlag, back to CPU.\n");
                 cpu->resetTCAFlag();
-                uint64_t* writeData = new uint64_t(0x0);
+                *writeData=0;
                 cpu->tcaWriteMem(0xffffff807fbaff40, (uint8_t*)writeData, 1);
                 cpu->fetch();
                 return 1;
