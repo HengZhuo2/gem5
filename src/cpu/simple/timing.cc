@@ -1590,30 +1590,27 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
             break;
         case 11 :
             // skip if currenTask
-            if (*tempData4 == currenTask)
-                tcaStateSet(29);
+            if (tnapiBase_virt == currenTask)
+                tcaStateSet(28);
+            if (*tempData4 && 0x1)
+                tcaStateSet(28);
             break;
         case 12 :
-            // skip if on_rq
-            if (*tempData4 && 0x1)
-                tcaStateSet(29);
-            break;
-        case 13 :
             *tempData4 = *tempData4 | 0x2;
             break;
-        case 15 :
+        case 14 :
             *tempData4 = *tempData4 + 1;
             break;
-        case 17 :
+        case 16 :
             *tempData4 = *tempData4 + 1;
             break;
-        case 20 :
+        case 19 :
             *tempData8 = *tempData8 | 0x40000000000000;
             break;
-        case 24 :
-            tcaInstList[27].addr=*listpreAddr;
+        case 23 :
+            tcaInstList[26].addr=*listpreAddr;
             break;
-        case 31 :
+        case 30 :
             // other interrupts posted, do not handle.
             if (!cpu->isTCAFlagSet()) {
                 DPRINTF(TcaMisc, "tcaflag is not set, back to CPU.\n");
@@ -1624,7 +1621,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 return 1;
             }
             break;
-        case 32 :
+        case 31 :
             tcaStateReset();
             pkt->writeData((uint8_t*)readData);
             // after case 31, can only mean we have to do tca again

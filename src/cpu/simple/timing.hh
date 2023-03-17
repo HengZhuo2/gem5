@@ -311,46 +311,45 @@ class TimingSimpleCPU : public BaseSimpleCPU
           tcaInstList[9]={0xffffff8001026b00, false, tempData8, 8, false, 0};
 
           //inside wakeupNapi, condition check, skip if currenTask or on_rq
-          tcaInstList[10]={tnapiBase, true, tempData4, 4, false, 0};
-          tcaInstList[11]={tnapiBase + 0x60, true, tempData4, 4, false, 0};
+          tcaInstList[10]={tnapiBase + 0x60, true, tempData4, 4, false, 0};
           // // rt_se->on_rq, rt_se->on_list, no control flow,
           // // tnapiBase + 0x1a4 and tnapiBase + 0x1a6
           // updating rq->curr->flags TIF_NEED_RESCHED | 0x2;
-          tcaInstList[12]={0xffffff800109a700, true, tempData4, 4, false, 0};
-          tcaInstList[13]={0xffffff800109a700, false, tempData4, 4, false, 0};
+          tcaInstList[11]={0xffffff800109a700, true, tempData4, 4, false, 0};
+          tcaInstList[12]={0xffffff800109a700, false, tempData4, 4, false, 0};
           // read then + 1 writeback, rq->nr_running, rq->rt_nr_running
-          tcaInstList[14]={0xffffff807fbaff44, true, tempData4, 4, false, 0};
-          tcaInstList[15]={0xffffff807fbaff44, false, tempData4, 4, false, 0};
-          tcaInstList[16]={0xffffff807fbb0790, true, tempData4, 4, false, 0};
-          tcaInstList[17]={0xffffff807fbb0790, false, tempData4, 4, false, 0};
+          tcaInstList[13]={0xffffff807fbaff44, true, tempData4, 4, false, 0};
+          tcaInstList[14]={0xffffff807fbaff44, false, tempData4, 4, false, 0};
+          tcaInstList[15]={0xffffff807fbb0790, true, tempData4, 4, false, 0};
+          tcaInstList[16]={0xffffff807fbb0790, false, tempData4, 4, false, 0};
 
-          // step 18: rq->rt_queued
-          tcaInstList[18]={0xffffff807fbb07c0, false, fix1, 4, false, 0};
+          // step 17: rq->rt_queued
+          tcaInstList[17]={0xffffff807fbb07c0, false, fix1, 4, false, 0};
 
-          // step 19, 20: update priority
-          tcaInstList[19]={0xffffff807fbb0140, true, tempData8, 8, false, 0};
-          tcaInstList[20]={0xffffff807fbb0140, false, tempData8, 8, false, 0};
+          // step 18, 19: update priority
+          tcaInstList[18]={0xffffff807fbb0140, true, tempData8, 8, false, 0};
+          tcaInstList[19]={0xffffff807fbb0140, false, tempData8, 8, false, 0};
 
-          // step 21, 22: rt_se->on_list, rt_se->on_rq set to 1
-          tcaInstList[21]={tnapiBase + 0x1a6, false, fix1, 2, false, 0};
-          tcaInstList[22]={tnapiBase + 0x1a4, false, fix1, 2, false, 0};
+          // step 20, 21: rt_se->on_list, rt_se->on_rq set to 1
+          tcaInstList[20]={tnapiBase + 0x1a6, false, fix1, 2, false, 0};
+          tcaInstList[21]={tnapiBase + 0x1a4, false, fix1, 2, false, 0};
 
-          // step 23, 24,25,26,27: read and modify list
+          // step 22, 23,24,25,26: read and modify list
           uint64_t* tnapiAddr = new uint64_t(tnapiBase + 0x180);
           uint64_t* listAddr = new uint64_t(0xffffff807fbb04b0);
-          tcaInstList[23]={0xffffff807fbb04b8, true, listpreAddr, 8, false, 0};
-          tcaInstList[24]={0xffffff807fbb04b8, false, tnapiAddr, 8, false, 0};
-          tcaInstList[25]={tnapiBase+0x180, false, listAddr, 8, false, 0};
-          tcaInstList[26]={tnapiBase+0x188, false, listpreAddr, 8, false, 0};
-          tcaInstList[27]={*listpreAddr, false, tnapiAddr, 8, false, 0};
+          tcaInstList[22]={0xffffff807fbb04b8, true, listpreAddr, 8, false, 0};
+          tcaInstList[23]={0xffffff807fbb04b8, false, tnapiAddr, 8, false, 0};
+          tcaInstList[24]={tnapiBase+0x180, false, listAddr, 8, false, 0};
+          tcaInstList[25]={tnapiBase+0x188, false, listpreAddr, 8, false, 0};
+          tcaInstList[26]={*listpreAddr, false, tnapiAddr, 8, false, 0};
 
-          // step 28, task_struct->on_rq to 1
-          tcaInstList[28]={tnapiBase + 0x60, false, fix1, 4, false, 0};
-          // step 29, p->__state to TASK_RUNNING, steps 6,7 can skips to here
-          tcaInstList[29]={tnapiBase + 0x10, false, fix0, 4, false, 0};
-          // step 30, 31
-          tcaInstList[30]={0xffffffc00800d010, false, gic_read1, 4, false, 0};
-          tcaInstList[31]={0xffffffc00800d00c, true, nullptr, 4, false, 0x3ff};
+          // step 27, task_struct->on_rq to 1
+          tcaInstList[27]={tnapiBase + 0x60, false, fix1, 4, false, 0};
+          // step 28, p->__state to TASK_RUNNING
+          tcaInstList[28]={tnapiBase + 0x10, false, fix0, 4, false, 0};
+          // write to gic and read next, steps 6,7 can skips to here
+          tcaInstList[29]={0xffffffc00800d010, false, gic_read1, 4, false, 0};
+          tcaInstList[30]={0xffffffc00800d00c, true, nullptr, 4, false, 0x3ff};
         }
 
         // void init();
