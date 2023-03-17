@@ -247,6 +247,8 @@ class AtomicSimpleCPU : public BaseSimpleCPU
     Fault amoMem(Addr addr, uint8_t *data, unsigned size,
                  Request::Flags flags, AtomicOpFunctorPtr amo_op) override;
     Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaReadMemPhysical(Addr addr, uint8_t *data, unsigned size);
+    Fault tcaWriteMemPhysical(Addr addr, uint8_t *data, unsigned size);
     Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
     void regProbePoints() override;
 
@@ -268,6 +270,7 @@ class AtomicSimpleCPU : public BaseSimpleCPU
     // void setBaseAddr(Addr askAddr, uint8_t *resultAddr);
     // uint8_t * getBaseAddr(){return baseAddr; }
     // uint8_t * getHostAddr(Addr askAddr);
+    Addr tnapi_addr;
     int wakeupNapi();
     int tcaProcess() override;
     std::map<Addr, std::string> tcaInstSet;

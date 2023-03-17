@@ -420,6 +420,15 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
             DPRINTF(Interrupt,
                     "CPU %d reading IAR.id=%d IAR.cpu=%d, iar=0x%x\n",
                     ctx, iar.ack_id, iar.cpu_id, iar);
+
+            auto tc = sys->threads[1];
+            if (name()== "testsys.realview.gic" && ctx==1 && haveTCA
+                    && iar.ack_id == 0x3ff) {
+                tc->getCpuPtr()->resetTCAFlag();
+                DPRINTF(Interrupt, "cpu:[%i] TCA resetTCAFlag, read 0x3ff.\n",
+                tc->getCpuPtr()->cpuId());
+            }
+
             cpuHighestInt[ctx] = SPURIOUS_INT;
             updateIntState(-1);
             clearInt(ctx, active_int);
@@ -672,14 +681,17 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
             getActiveInt(ctx, intNumToWord(iar.ack_id)) &= ~int_num;
         }
         updateRunPri();
-        DPRINTF(Interrupt, "CPU %d done handling intr IAR = %d from cpu %d\n",
-                ctx, iar.ack_id, iar.cpu_id);
 
         auto tc = sys->threads[0];
+        DPRINTF(Interrupt, "CPU %d done handling intr IAR = %d"
+                "from cpu %d, tca[%i].\n",
+                ctx, iar.ack_id, iar.cpu_id,tc->getCpuPtr()->isTCAFlagSet());
+
+        // this never hit
         if (name()== "testsys.realview.gic" && ctx==1 && haveTCA
                 && iar.ack_id == 0x65 && tc->getCpuPtr()->isTCAFlagSet()) {
             tc->getCpuPtr()->resetTCAFlag();
-            DPRINTF(Interrupt, "NIC IRQ handled by cpu,"
+            DPRINTF(Interrupt, "TCA NIC IRQ handled by cpu,"
                     "reset TCAFlag, prevent repeat.\n");
         }
 
@@ -896,13 +908,13 @@ GicV2::updateIntState(int hint)
             if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
                     && cpuHighestInt[cpu] == 0x65) {
                 tc->getCpuPtr()->setTCAFlag();
-                DPRINTF(Interrupt, "set TCAFlag due to irq %#x.\n",
+                DPRINTF(Interrupt, "TCA set TCAFlag due to irq %#x.\n",
                         cpuHighestInt[cpu]);
             } else if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
                     && cpuHighestInt[cpu] != 0x65
                     && tc->getCpuPtr()->isTCAFlagSet()) {
                 tc->getCpuPtr()->resetTCAFlag();
-                DPRINTF(Interrupt, "TCAFlag was set, but higher IRQ coming in,"
+                DPRINTF(Interrupt, "TCA, higher IRQ coming in,"
                         "make ways for it, reset the TCAFlag.\n");
             }
 

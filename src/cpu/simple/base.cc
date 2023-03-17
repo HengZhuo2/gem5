@@ -267,21 +267,6 @@ BaseSimpleCPU::checkForInterrupts()
                     interrupt->name());
                 return;
             }
-            // DPRINTF(TcaMisc, "checkInterrupts returns true,"
-            //     "going to invoke, thread[%i], tca:%i.\n"
-            //     ,curThread,tc->getCpuPtr()->isTCAFlagSet());
-
-            // if (tc->getCpuPtr()->isTCAFlagSet()) {
-            //     DPRINTF(TcaMisc, "TCA processing\n");
-            //     int tcaRet = thread->getCpuPtr()->tca.process();
-            //     thread->getCpuPtr()->resetTCAFlag();
-            //     if (tcaRet) {
-            //         t_info.execContextStats.numTcaExes++;
-            //         DPRINTF(TcaMisc, "TCA processed normal, done\n");
-            //         return;
-            //     }
-            //     DPRINTF(TcaMisc, "TCA processed abnormal, skip.\n");
-            // }
             DPRINTF(TcaMisc, "checkForInterrupts normal path.\n");
             t_info.fetchOffset = 0;
             interrupts[curThread]->updateIntrInfo(); // nothing for arm
@@ -303,12 +288,13 @@ BaseSimpleCPU::tcaCheck()
             DPRINTF(TcaMisc, "but in transcation, dont do it.\n");
             return 0;
         }
-        // if (curTick() == 15897813137500) {
+        // if (curTick() == 16538016123750) {
         //     tc->getCpuPtr()->resetTCAFlag();
         //     DPRINTF(TcaMisc, "TCA debug, reset.\n");
         // }
         if (tc->getCpuPtr()->isTCAFlagSet()) {
-            DPRINTF(TcaMisc, "TCA ready found, lets do it.\n");
+            DPRINTF(TcaMisc, "cpu[%i]:TCA ready found, lets do it.\n",
+                cpuId());
             return 1;
         }
     }
