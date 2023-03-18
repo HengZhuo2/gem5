@@ -715,10 +715,14 @@ TimingSimpleCPU::fetch()
 
     if ((!curStaticInst || !curStaticInst->isDelayedCommit())
             && !tca.tcaWorking()) {
-        if (tcaCheck()){
+        if (tcaCheck()) {
             tca.currenTask=thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
-            if (tca.initProcess()) {
-                return;
+            if (_status == Running) {
+                if (tca.initProcess()) {
+                    return;
+                }
+            } else {
+                DPRINTF(TcaMisc, "_status: %s, skip.\n",_status);
             }
         }
         checkForInterrupts();
@@ -1183,8 +1187,8 @@ TimingSimpleCPU::DcachePort::recvTimingResp(PacketPtr pkt)
     // first read to gic get irq number
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     // cpu->tcaReadMemTiming(0xffffffc00800d00c, (uint8_t*)readData, 4);
-    // DPRINTF(TcaMem, "first tca-gic read done. read: %#x.\n", *readData);
     if (cpu->tca.tcaWorking()) {
+        DPRINTF(TcaMem, "recvTimingResp for %#x. \n", pkt->getAddr());
         cpu->tca.process(pkt);
         if (pkt) {
             delete pkt;
@@ -1470,7 +1474,7 @@ TimingSimpleCPU::tcaReadMemTimingPhy(Addr addr, uint8_t* data, unsigned size,
 
     // Now do the access.
     DPRINTF(TcaMem, "tcaReadMemTimingPhy, addr: %#x, size: %i, flags: %#x. \n",
-            req->getPaddr(), size, *(uint64_t*)dummydata, req->getFlags());
+            req->getPaddr(), size, req->getFlags());
 
     if (!dcachePort.sendTimingReq(pkt)) {
         DPRINTF(TcaMem, "failed.");
@@ -1515,10 +1519,6 @@ TimingSimpleCPU::TCA:: initProcess(){
     DPRINTF(TcaMisc, "initProcess.\n");
     uint64_t* readData = new uint64_t(100);
     Fault fault = cpu->tcaReadMem(0xffbaff40, (uint8_t*)readData, 4);
-    if (fault != NoFault) {
-        DPRINTF(TcaMisc, "initProcess fault 1, skip tca.\n");
-        return 0;
-    }
     if (*readData == 0x1) {
         DPRINTF(TcaMisc, "initProcess failed, rq lock is %#x, "
             "skip and return.\n", *readData);

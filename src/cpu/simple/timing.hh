@@ -279,10 +279,10 @@ class TimingSimpleCPU : public BaseSimpleCPU
         uint64_t* tempData4_5;
         uint64_t* tempData8;
         uint64_t* readDataptr;
-        uint64_t tnapiBaseVirt = 0xffffff8001d1db00;
-        uint64_t tnapiBase = 0x81d1db00;
-        // uint64_t tnapiBaseVirt = 0xffffff8001d1ce00;
-        // uint64_t tnapiBase = 0x81d1ce00;
+        // uint64_t tnapiBaseVirt = 0xffffff8001d1db00;
+        // uint64_t tnapiBase = 0x81d1db00;
+        uint64_t tnapiBaseVirt = 0xffffff8001d1ce00;
+        uint64_t tnapiBase = 0x81d1ce00;
       public:
         TCA(TimingSimpleCPU *_cpu)
             : cpu(_cpu)
