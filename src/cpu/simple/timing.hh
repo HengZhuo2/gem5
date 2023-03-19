@@ -304,7 +304,7 @@ class TimingSimpleCPU : public BaseSimpleCPU
 
           uint64_t* fix1 = new uint64_t(0x1);
           uint64_t* fix0 = new uint64_t(0x0);
-          uint64_t* fixf = new uint64_t(0xffff);
+          uint64_t* fixf = new uint64_t(0xffffffff);
           // gic read
           tcaInstList[1]={0x2c00200c, true, gic_read1, 4, 0x20c02};
           // eth read/write/read

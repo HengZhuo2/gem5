@@ -1560,7 +1560,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
         //ethernet.write.1, mask all future irqs, pc ffffffc008516498
         //ethernet.read.2, read REG_STATUS, pc 0xffffffc0085164a0
         case 1 :
-            if (*readData != 0x65){
+            if (*readData != 0x65) {
                 DPRINTF(TcaMisc, "should have be %#x, but not, is %#x,"
                     "resetTCAFlag.\n", 0x65, *readData);
                 step=0;
@@ -1569,6 +1569,22 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
                 cpu->fetch();
                 return 2;
+            }
+            break;
+        case 2 :
+            if (*readData == 0x0) {
+                DPRINTF(TcaMisc, "should not have %#x, skip to finish.\n",
+                    *readData);
+                cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
+                step=31;
+            } else if (!(*readData & 0x80000000)) {
+                *readData = 0XFFFFFFFF;
+                cpu->tcaWriteMem(0x400000d8, (uint8_t*)readData, 4);
+                cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
+                *readData = 0X0000009D;
+                cpu->tcaWriteMem(0x400000d0, (uint8_t*)readData, 4);
+                cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
+                step=31;
             }
             break;
         case 7 :
