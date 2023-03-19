@@ -719,6 +719,7 @@ TimingSimpleCPU::fetch()
             tca.currenTask=thread->readMiscReg(gem5::ArmISA::MISCREG_SP_EL0);
             if (_status == Running) {
                 if (tca.initProcess()) {
+                    t_info.execContextStats.numTcaExes++;
                     return;
                 }
             } else {
