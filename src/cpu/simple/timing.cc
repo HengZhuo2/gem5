@@ -299,7 +299,8 @@ TimingSimpleCPU::handleReadPacket(PacketPtr pkt)
     if (req->isHTMCmd()) {
         assert(!req->isLocalAccess());
     }
-
+    DPRINTF(TimingMem, "handleReadPacket, vaddr: %#x, paddr: %#x, size: %i.\n",
+        pkt->getAddr(), req->getPaddr(), pkt->getSize());
     // We're about the issues a locked load, so tell the monitor
     // to start caring about this address
     if (pkt->isRead() && pkt->req->isLLSC()) {
@@ -534,6 +535,8 @@ TimingSimpleCPU::handleWritePacket()
     SimpleThread* thread = t_info.thread;
 
     const RequestPtr &req = dcache_pkt->req;
+    DPRINTF(TimingMem, "handleWritePacket vaddr: %#x, paddr: %#x, size: %i.\n",
+        dcache_pkt->getAddr(), req->getPaddr(), dcache_pkt->getSize());
     if (req->isLocalAccess()) {
         Cycles delay = req->localAccessor(thread->getTC(), dcache_pkt);
         new IprEvent(dcache_pkt, this, clockEdge(delay));
@@ -891,6 +894,9 @@ TimingSimpleCPU::completeIfetch(PacketPtr pkt)
         DPRINTF(HtmCpu, "htmTransactionStarts++=%u\n",
             thread->htmTransactionStarts);
     }
+    DPRINTF(TimingCPU, "Inst:%s at pc %#x, %s. \n",
+        tcaInstSet[thread->pcState().instAddr()], thread->pcState().instAddr(),
+        curStaticInst->disassemble(thread->pcState().instAddr()));
     if (tcaInstSet.find(thread->pcState().instAddr())
         != tcaInstSet.end()) {
         DPRINTF(TcaInst, "TcaInst:%s at pc %#x, %s. \n",
