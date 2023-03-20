@@ -118,7 +118,6 @@ class BaseSimpleCPU : public BaseCPU
         DcacheRetry,
         DcacheWaitResponse,
         DcacheWaitSwitch,
-        tcaWaiting,
     };
 
     Status _status;

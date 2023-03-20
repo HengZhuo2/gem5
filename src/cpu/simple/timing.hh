@@ -281,8 +281,8 @@ class TimingSimpleCPU : public BaseSimpleCPU
         uint64_t* readDataptr;
         // uint64_t tnapiBaseVirt = 0xffffff8001d1db00;
         // uint64_t tnapiBase = 0x81d1db00;
-        uint64_t tnapiBaseVirt = 0xffffff8001d1ce00;
-        uint64_t tnapiBase = 0x81d1ce00;
+        uint64_t tnapiBaseVirt = 0xffffff8001ef3400;
+        uint64_t tnapiBase = 0x81ef3400;
       public:
         TCA(TimingSimpleCPU *_cpu)
             : cpu(_cpu)
@@ -502,7 +502,7 @@ class TimingSimpleCPU : public BaseSimpleCPU
     Fault tcaWriteMemTiming(Addr addr, uint8_t *data, unsigned size);
     Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
     Fault tcaReadMemPhy(Addr addr, uint8_t *data, unsigned size);
-    Fault tcaReadMemTimingPhy(Addr addr, uint8_t *data,
+    int tcaReadMemTimingPhy(Addr addr, uint8_t *data,
       unsigned size, uint64_t flags);
     Fault tcaWriteMemTimingPhy(Addr addr, uint8_t *data,
       unsigned size, uint64_t flags);

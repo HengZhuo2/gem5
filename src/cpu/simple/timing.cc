@@ -1453,13 +1453,12 @@ TimingSimpleCPU::tcaReadMemTiming(Addr addr, uint8_t* data, unsigned size)
     return fault;
 }
 
-Fault
+int
 TimingSimpleCPU::tcaReadMemTimingPhy(Addr addr, uint8_t* data, unsigned size,
                                      uint64_t flagsin)
 {
     SimpleExecContext &t_info = *threadInfo[curThread];
     SimpleThread* thread = t_info.thread;
-    Fault fault;
     const Addr pc = thread->pcState().instAddr();
     Request::Flags flags = flagsin;
     // Request::Flags flags;
@@ -1478,9 +1477,15 @@ TimingSimpleCPU::tcaReadMemTimingPhy(Addr addr, uint8_t* data, unsigned size,
             req->getPaddr(), size, req->getFlags());
 
     if (!dcachePort.sendTimingReq(pkt)) {
-        DPRINTF(TcaMem, "failed.");
+        _status = DcacheRetry;
+        dcache_pkt = pkt;
+        DPRINTF(TcaMem, "tcaReadMemTimingPhy: failed, expect retry. \n");
+    } else {
+        _status = DcacheWaitResponse;
+        // memory system takes ownership of packet
+        dcache_pkt = NULL;
     }
-    return fault;
+    return 1;
 }
 
 Fault
@@ -1509,9 +1514,18 @@ TimingSimpleCPU::tcaWriteMemTimingPhy(Addr addr, uint8_t* data, unsigned size,
     }
 
     // Now do the access.
-    DPRINTF(TcaMem, "tcaWriteMemTiming, paddr: %#x, size: %i, data: %#x. \n",
+    DPRINTF(TcaMem, "tcaWriteMemTimingPhy, paddr: %#x, size: %i, data: %#x.\n",
             req->getPaddr(), size, *dummydata);
-    dcachePort.sendTimingReq(pkt);
+
+    if (!dcachePort.sendTimingReq(pkt)) {
+        _status = DcacheRetry;
+        dcache_pkt = pkt;
+        DPRINTF(TcaMem, "tcaWriteMemTimingPhy: failed, expect retry. \n");
+    } else {
+        _status = DcacheWaitResponse;
+        // memory system takes ownership of packet
+        dcache_pkt = NULL;
+    }
     return fault;
 }
 
@@ -1530,7 +1544,7 @@ TimingSimpleCPU::TCA:: initProcess(){
     // first read to gic get irq number
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     cpu->tcaReadMemTimingPhy(0x2c00200c, (uint8_t*)readData, 4, 0x20c02);
-    DPRINTF(TcaMisc, "initProcess success.\n");
+    DPRINTF(TcaMisc, "initProcess Done.\n");
     preStep=1;
     step=1;
     return 1;
@@ -1568,6 +1582,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 cpu->resetTCAFlag();
                 *writeData=0;
                 cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+                cpu->_status = BaseSimpleCPU::Running;
                 cpu->fetch();
                 return 2;
             }
@@ -1579,6 +1594,8 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
                 step=31;
             } else if (!(*readData & 0x80000000)) {
+                DPRINTF(TcaMisc, "should not have %#x, reset to finish.\n",
+                    *readData);
                 *readData = 0XFFFFFFFF;
                 cpu->tcaWriteMem(0x400000d8, (uint8_t*)readData, 4);
                 cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
@@ -1590,6 +1607,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
             break;
         case 7 :
             *readData = *readData | 0x1;
+            // essentially step 8
             cpu->tcaWriteMem(0x81026b00, (uint8_t*)readData, 8);
             step=9;
             break;
@@ -1601,6 +1619,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
             break;
         case 10 :
             *readData = *readData | 0x200;
+            // essentially step 11
             cpu->tcaWriteMem(0x81026b00, (uint8_t*)readData, 8);
             step = 31;
             break;
@@ -1637,6 +1656,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 step=0;
                 *writeData=0;
                 cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+                cpu->_status = BaseSimpleCPU::Running;
                 cpu->fetch();
                 return 1;
             }
@@ -1653,6 +1673,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 cpu->resetTCAFlag();
                 *writeData=0;
                 cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+                cpu->_status = BaseSimpleCPU::Running;
                 cpu->fetch();
                 return 1;
             }
