@@ -55,15 +55,17 @@ class L1I(L1_ICache):
 
 
 class L1D(L1_DCache):
-    tag_latency = 2
-    data_latency = 2
+    data_latency = 1
+    tag_latency = 1
     response_latency = 1
-    mshrs = 16
-    tgts_per_mshr = 16
+    mshrs = 4
+    tgts_per_mshr = 8
     size = '32kB'
-    assoc = 2
-    write_buffers = 16
-
+    assoc = 4
+    write_buffers = 4
+    prefetcher = StridePrefetcher(
+        queue_size=4,
+        degree=4)
 
 class L2(L2Cache):
     tag_latency = 12
