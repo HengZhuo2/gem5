@@ -202,6 +202,7 @@ AtomicSimpleCPU::drainResume()
         return;
 
     DPRINTF(SimpleCPU, "Resume\n");
+    threadInfo[0]->thread->lastSuspend = curTick();
     verifyMemoryMode();
 
     assert(!threadContexts.empty());
