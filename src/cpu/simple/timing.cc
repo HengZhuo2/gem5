@@ -180,6 +180,7 @@ TimingSimpleCPU::drainResume()
         return;
 
     DPRINTF(SimpleCPU, "Resume\n");
+    previousCycle = curCycle();
     verifyMemoryMode();
 
     assert(!threadContexts.empty());
