@@ -89,6 +89,35 @@ TimingSimpleCPU::init()
     tcaInstSet[0xffffffc0083ccf10] = "gic read reg";
     tcaInstSet[0xffffffc00851644c] = "ethernet read reg";
     tcaInstSet[0xffffff800190db10] = "read state";
+
+    tcaInstSet[0xffffffc0080a5578] = "try_to_wake_up";
+    tcaInstSet[0xffffffc0080a3dc8] = "ttwu_do_activate";
+    tcaInstSet[0xffffffc0080a3e5c] = "ttwu_do_activate ret";
+    tcaInstSet[0xffffffc0080a3d20] = "ttwu_do_wakeup";
+    tcaInstSet[0xffffffc0080a3ca0] = "check_preempt_curr";
+    tcaInstSet[0xffffffc0080a36b8] = "resched_curr";
+    tcaInstSet[0xffffffc0080a36cc] = "test_tsk_need_resched";
+    tcaInstSet[0xffffffc0080a36d8] = "test_tsk_need_resched fail";
+    tcaInstSet[0xffffffc0080a371c] = "resched_curr ret";
+    tcaInstSet[0xffffffc0080a36f4] = "setting TIF_NEED_RESCHED";
+    tcaInstSet[0xffffffc0086ca4e0] = "read napi_struct->state ";
+    tcaInstSet[0xffffffc0086ca4ec] = "napi_struct->state | 0x1 ";
+
+    tcaInstSet[0xffffffc0086cb96c] = "read task_struct.__state";
+    tcaInstSet[0xffffffc0086cb978] = "set napi_struct->state";
+
+    tcaInstSet[0xffffffc0080a55ec] = "unknown read ";
+
+    tcaInstSet[0xffffffc0086cb980] = "going into setbit";
+    tcaInstSet[0xffffffc0086cb984] = "return from setbit";
+
+    tcaInstSet[0xffffffc0087e0838] = "_raw_spin_lock";
+    tcaInstSet[0xffffffc0080a2188] = "raw_spin_rq_lock_nested";
+    tcaInstSet[0xffffffc0080a22c0] = "__task_rq_lock";
+    tcaInstSet[0xffffffc0080a2378] = "task_rq_lock";
+    tcaInstSet[0xffffffc0080a2230] = "raw_spin_rq_unlock";
+    tcaInstSet[0xffffffc0087e086c] = "casa locking";
+    tcaInstSet[0xffffffc0087e0030] = "unlocking";
     // write 2 at a time
     tcaInstSet[0xffffffc0085164c8] = "write total_tx_bytes, total_tx_packets";
     tcaInstSet[0xffffffc0085164d0] = "write total_rx_bytes, total_rx_packets";
