@@ -619,8 +619,6 @@ TimingSimpleCPU::writeMem(uint8_t *data, unsigned size,
 
     // TODO: TimingSimpleCPU doesn't support arbitrarily long multi-line mem.
     // accesses yet
-    DPRINTF(TimingMem, "writeMem, vaddr: %#x, size: %i, data: %#x. \n",
-                addr, size, (uint64_t*)newData);
     if (split_addr > addr) {
         RequestPtr req1, req2;
         assert(!req->isLLSC() && !req->isSwap());
@@ -1569,14 +1567,14 @@ int
 TimingSimpleCPU::TCA:: initProcess(){
     DPRINTF(TcaMisc, "initProcess.\n");
     uint64_t* readData = new uint64_t(100);
-    Fault fault = cpu->tcaReadMem(0xffbaff40, (uint8_t*)readData, 4);
+    Fault fault = cpu->tcaReadMem(0x27efa9f40, (uint8_t*)readData, 4);
     if (*readData == 0x1) {
         DPRINTF(TcaMisc, "initProcess failed, rq lock is %#x, "
             "skip and return.\n", *readData);
         return 0;
     }
     uint64_t* writeData = new uint64_t(0x1);
-    cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+    cpu->tcaWriteMem(0x27efa9f40, (uint8_t*)writeData, 1);
     // first read to gic get irq number
     // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
     cpu->tcaReadMemTimingPhy(0x2c00200c, (uint8_t*)readData, 4, 0x20c02);
@@ -1617,7 +1615,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 step=0;
                 cpu->resetTCAFlag();
                 *writeData=0;
-                cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+                cpu->tcaWriteMem(0x27efa9f40, (uint8_t*)writeData, 1);
                 cpu->_status = BaseSimpleCPU::Running;
                 cpu->fetch();
                 return 2;
@@ -1644,7 +1642,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
         case 7 :
             *readData = *readData | 0x1;
             // essentially step 8
-            cpu->tcaWriteMem(0x81026b00, (uint8_t*)readData, 8);
+            cpu->tcaWriteMem(0x100026b00, (uint8_t*)readData, 8);
             step=9;
             break;
         case 9 :
@@ -1656,7 +1654,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
         case 10 :
             *readData = *readData | 0x200;
             // essentially step 11
-            cpu->tcaWriteMem(0x81026b00, (uint8_t*)readData, 8);
+            cpu->tcaWriteMem(0x100026b00, (uint8_t*)readData, 8);
             step = 31;
             break;
         case 12 :
@@ -1683,7 +1681,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
             *tempData8 = *tempData8 | 0x40000000000000;
             break;
         case 27 :
-            tcaInstList[28].addr=(((*listpreAddr)<<32)>>32)|0x80000000;
+            tcaInstList[28].addr=  *listpreAddr - 0xffffff7f80000000;
             break;
         case 31 :
             // other interrupts posted, do not handle.
@@ -1691,7 +1689,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 DPRINTF(TcaMisc, "tcaflag is not set, back to CPU.\n");
                 step=0;
                 *writeData=0;
-                cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+                cpu->tcaWriteMem(0x27efa9f40, (uint8_t*)writeData, 1);
                 cpu->_status = BaseSimpleCPU::Running;
                 cpu->fetch();
                 return 1;
@@ -1708,7 +1706,7 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                 step=0;
                 cpu->resetTCAFlag();
                 *writeData=0;
-                cpu->tcaWriteMem(0xffbaff40, (uint8_t*)writeData, 1);
+                cpu->tcaWriteMem(0x27efa9f40, (uint8_t*)writeData, 1);
                 cpu->_status = BaseSimpleCPU::Running;
                 cpu->fetch();
                 return 1;
