@@ -33,6 +33,8 @@ class BaseTimingSimpleCPU(BaseSimpleCPU):
     cxx_header = "cpu/simple/timing.hh"
     cxx_class = 'gem5::TimingSimpleCPU'
 
+    tca_enable = Param.Bool(False, "Enable gem5 extensions")
+
     @classmethod
     def memory_mode(cls):
         return 'timing'
