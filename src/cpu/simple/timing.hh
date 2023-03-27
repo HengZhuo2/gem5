@@ -266,6 +266,7 @@ class TimingSimpleCPU : public BaseSimpleCPU
         };
         RegVal currenTask;
         int preStep, step;
+        bool initialized;
       protected:
         TimingSimpleCPU *cpu;
         std::string _name;
@@ -286,8 +287,9 @@ class TimingSimpleCPU : public BaseSimpleCPU
             : cpu(_cpu)
         {
           _name = cpu->name() + ".tca";
-          // step = 0;
-          // preStep = 0;
+          initialized = 0;
+          step = 0;
+          preStep = 0;
 
           // gic_read1 = new uint64_t(6666);
           // tempData4_1 = new uint64_t(6666);
