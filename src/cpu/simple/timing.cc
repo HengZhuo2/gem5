@@ -180,7 +180,9 @@ TimingSimpleCPU::drainResume()
         return;
 
     DPRINTF(SimpleCPU, "Resume\n");
-    tca.init();
+    if (!tca.initialized) {
+        tca.init();
+    }
     previousCycle = curCycle();
     verifyMemoryMode();
 
@@ -1586,8 +1588,11 @@ TimingSimpleCPU::TCA:: init(){
     uint64_t* fix0 = new uint64_t(0x0);
     uint64_t* fixf = new uint64_t(0xffffffff);
 
-    tnapiBaseVirt = 0xffffff80802b1a00; //0xffffff8081628d00
-    tnapiBase = 0x1002b1a00; //0x101628d00 0x1002b1b80
+    uint64_t* readData = new uint64_t(6666);
+    cpu->tcaReadMem(0x100026c70, (uint8_t*)readData, 8);
+
+    tnapiBaseVirt = *readData;
+    tnapiBase = *readData- 0xffffff7f80000000;
 
     // gic read
     tcaInstList[1]={0x2c00200c, true, gic_read1, 4, 0x20c02};
@@ -1650,6 +1655,8 @@ TimingSimpleCPU::TCA:: init(){
     // write to gic and read next, steps 6,7 can skips to here
     tcaInstList[31]={0x2c002010, false, gic_read1, 4, 0xc0a};
     tcaInstList[32]={0x2c00200c, true, gic_read1, 4, 0x20c02};
+
+    initialized = 1;
 }
 
 int
