@@ -215,8 +215,9 @@ IGbE::read(PacketPtr pkt)
             regs.icr = regs.icr() & ~mask(30);
             DPRINTF(Ethernet, "Cleared ICR. ICR=%#x\n", regs.icr());
         }
-        if (regs.ctrl_ext.iame() && regs.icr.int_assert())
-            regs.imr &= ~regs.iam;
+        // if (regs.ctrl_ext.iame() && regs.icr.int_assert())
+        regs.imr &= ~0xFFFFFFFF;
+        DPRINTF(Ethernet, "Cleared IMR. IMR=%#x\n", regs.imr);
         chkInterrupt();
         break;
       case REG_EICR:
