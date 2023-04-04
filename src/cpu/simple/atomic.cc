@@ -464,13 +464,13 @@ AtomicSimpleCPU::readMem(Addr addr, uint8_t *data, unsigned size,
                 dcache_latency += sendPacket(dcachePort, &pkt);
             }
             dcache_access = true;
-            if (tcaInstSet.find(thread->pcState().instAddr())
-                    != tcaInstSet.end()) {
-                DPRINTF(TcaMem, "Done readmem, vaddr: %#x, paddr: %#x,"
-                    "size: %i, data: %p.\n",
-                    frag_addr, req->getPaddr(), size,
-                    *(uint64_t*)data);
-            }
+            // if (tcaInstSet.find(thread->pcState().instAddr())
+            //         != tcaInstSet.end()) {
+            //     DPRINTF(TcaMem, "Done readmem, vaddr: %#x, paddr: %#x,"
+            //         "size: %i, data: %p.\n",
+            //         frag_addr, req->getPaddr(), size,
+            //         *(uint64_t*)data);
+            // }
             DPRINTF(ArmMem, "Done readmem, vaddr: %#x, paddr: %#x, size: %i,"
                 " data: %p.\n",
                 frag_addr, req->getPaddr(), size, *(uint64_t*)data);
@@ -578,13 +578,13 @@ AtomicSimpleCPU::writeMem(uint8_t *data, unsigned size, Addr addr,
                     threadSnoop(&pkt, curThread);
                 }
 
-                if (tcaInstSet.find(thread->pcState().instAddr())
-                        != tcaInstSet.end()) {
-                    DPRINTF(TcaMem, "Done writemem, vaddr: %#x, paddr: %#x,"
-                        "size: %i, data: %p. \n",
-                        frag_addr, req->getPaddr(), size,
-                        *(uint64_t*)data);
-                }
+                // if (tcaInstSet.find(thread->pcState().instAddr())
+                //         != tcaInstSet.end()) {
+                //     DPRINTF(TcaMem, "Done writemem, vaddr: %#x, paddr: %#x,"
+                //         "size: %i, data: %p. \n",
+                //         frag_addr, req->getPaddr(), size,
+                //         *(uint64_t*)data);
+                // }
                 DPRINTF(ArmMem, "Done writemem, vaddr: %#x, paddr: %#x,"
                         "size: %i, data: %p. \n",
                         frag_addr, req->getPaddr(), size,
@@ -927,14 +927,14 @@ AtomicSimpleCPU::tick()
                     thread->pcState().instAddr(),
                     curStaticInst->disassemble(thread->pcState().instAddr()));
 
-                if (tcaInstSet.find(thread->pcState().instAddr())
-                    != tcaInstSet.end()) {
-                    DPRINTF(TcaInst, "TcaInst:%s at pc %#x, %s. \n",
-                        tcaInstSet[thread->pcState().instAddr()],
-                        thread->pcState().instAddr(),
-                        curStaticInst->disassemble(
-                            thread->pcState().instAddr()));
-                }
+                // if (tcaInstSet.find(thread->pcState().instAddr())
+                //     != tcaInstSet.end()) {
+                //     DPRINTF(TcaInst, "TcaInst:%s at pc %#x, %s. \n",
+                //         tcaInstSet[thread->pcState().instAddr()],
+                //         thread->pcState().instAddr(),
+                //         curStaticInst->disassemble(
+                //             thread->pcState().instAddr()));
+                // }
 
                 fault = curStaticInst->execute(&t_info, traceData);
 

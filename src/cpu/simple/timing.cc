@@ -1728,11 +1728,14 @@ TimingSimpleCPU::TCA:: process(PacketPtr pkt){
                     *readData);
                 *readData = 0XFFFFFFFF;
                 cpu->tcaWriteMem(0x400000d8, (uint8_t*)readData, 4);
-                cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
+                // cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
                 *readData = 0X0000009D;
                 cpu->tcaWriteMem(0x400000d0, (uint8_t*)readData, 4);
-                cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
+                // cpu->tcaReadMem(0x40000008, (uint8_t*)readData, 4);
                 step=31;
+            } else {
+                // skip the write mask and read on status
+                step+=2;
             }
             break;
         case 7 :
