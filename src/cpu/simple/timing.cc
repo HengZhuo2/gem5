@@ -1628,18 +1628,18 @@ TimingSimpleCPU::TCA:: init(){
     tcaInstList[17]={0x27efaa790, true, tempData4_5, 4, 0xa};
     tcaInstList[18]={0x27efaa790, false, tempData4_5, 4, 0xa};
 
-    // step 18: rq->rt_queued
+    // step 19: rq->rt_queued
     tcaInstList[19]={0x27efaa7c0, false, fix1, 4, 0xa};
 
-    // step 19, 20: update priority
+    // step 20, 21: update priority
     tcaInstList[20]={0x27efaa140, true, tempData8, 8, 0xb};
     tcaInstList[21]={0x27efaa140, false, tempData8, 8, 0xb};
 
-    // step 20, 21: rt_se->on_list, rt_se->on_rq set to 1
+    // step 22, 23: rt_se->on_list, rt_se->on_rq set to 1
     tcaInstList[22]={tnapiBase + 0x1a6, false, fix1, 2, 0x9};
     tcaInstList[23]={tnapiBase + 0x1a4, false, fix1, 2, 0x9};
 
-    // step 23, 24,25,26,27: read and modify list
+    // step 24, 25,26,27,28: read and modify list
     uint64_t* tnapiAddrVirt = new uint64_t(tnapiBaseVirt + 0x180);
     uint64_t* listAddr = new uint64_t(0xffffff81fefaa4b0);
     tcaInstList[24]={0x27efaa4b8, true, listpreAddr, 8, 0xb};
@@ -1648,9 +1648,9 @@ TimingSimpleCPU::TCA:: init(){
     tcaInstList[27]={tnapiBase+0x188, false, listpreAddr, 8, 0xb};
     tcaInstList[28]={*listpreAddr, false, tnapiAddrVirt, 8, 0xb};
 
-    // step 28, task_struct->on_rq to 1
+    // step 29, task_struct->on_rq to 1
     tcaInstList[29]={tnapiBase + 0x60, false, fix1, 4, 0xa};
-    // step 29, p->__state to TASK_RUNNING
+    // step 30, p->__state to TASK_RUNNING
     tcaInstList[30]={tnapiBase + 0x10, false, fix0, 4, 0xa};
     // write to gic and read next, steps 6,7 can skips to here
     tcaInstList[31]={0x2c002010, false, gic_read1, 4, 0xc0a};
@@ -1671,8 +1671,7 @@ TimingSimpleCPU::TCA:: initProcess(){
     }
     uint64_t* writeData = new uint64_t(0x1);
     cpu->tcaWriteMem(0x27efa9f40, (uint8_t*)writeData, 1);
-    // first read to gic get irq number
-    // gic.read.1 , read irq num, pc 0xffffffc0083ccf10
+    // step 0: read gic irq number pc 0xffffffc0083ccf10
     cpu->tcaReadMemTimingPhy(0x2c00200c, (uint8_t*)readData, 4, 0x20c02);
     DPRINTF(TcaMisc, "initProcess Done.\n");
     preStep=1;
