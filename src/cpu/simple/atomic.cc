@@ -697,62 +697,6 @@ AtomicSimpleCPU::amoMem(Addr addr, uint8_t* data, unsigned size,
     return fault;
 }
 
-// similart to amoMem, but no amo_op, using default Read
-// input:   addr is vaddr ,
-//          data points to data that "store" the read,
-//          no usage out of this scope
-//          from mem and return to isa part.
-//          flags is the part where care need to be taken
-Fault
-AtomicSimpleCPU::tcaReadMem(Addr addr, uint8_t* data, unsigned size)
-{
-    SimpleExecContext &t_info = *threadInfo[curThread];
-    SimpleThread *thread = t_info.thread;
-    // use the CPU's statically allocated amo request and packet objects
-    const RequestPtr &req = data_tca_req;
-    Fault fault = NoFault;
-    Request::Flags flags;
-
-    // RequestPtr &req =  new Request(addr, size, flags, dataRequestorId());
-
-    // RequestPtr req = std::make_shared<Request>(
-    //     addr, size, flags, dataRequestorId());
-
-    req->taskId(taskId());
-    req->setVirt(addr, size, flags, dataRequestorId(),
-                 thread->pcState().instAddr());
-    // req->setPaddr(addr);
-    // Packet pkt(req, Packet::makeReadCmd(req));
-    // pkt.dataStatic(data);
-    // dcache_latency += sendPacket(dcachePort, &pkt);
-    // dcache_access = true;
-    // translate to physical address
-
-    fault = thread->mmu->translateAtomic(req, thread->getTC(), BaseMMU::Read);
-
-    // pkt->addr
-    // Now do the access.
-    // Request(Addr paddr, unsigned size, Flags flags, RequestorID id) :
-    //     _paddr(paddr), _size(size), _requestorId(id), _time(curTick())
-    if (fault == NoFault && !req->getFlags().isSet(Request::NO_ACCESS)) {
-        Packet pkt(req, Packet::makeReadCmd(req));
-        pkt.dataStatic(data);
-
-        dcache_latency += sendPacket(dcachePort, &pkt);
-        DPRINTF(TcaMem, "Done tcaReadMem, vaddr: %#x, paddr: %#x, size: %i,"
-                " data: %p, flags: %#x. \n",addr, req->getPaddr(),
-                size, *(uint64_t*)data, req->getFlags());
-        dcache_access = true;
-        panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
-                pkt.getAddrRange().to_string(), pkt.print());
-        assert(!req->isLLSC());
-    }
-    // if (fault != NoFault && req->isPrefetch()) {
-    //     return NoFault;
-    // }
-    //If there's a fault and we're not doing prefetch, return it
-    return fault;
-}
 
 Fault
 AtomicSimpleCPU::tcaReadMemPhysical(Addr addr, uint8_t* data, unsigned size)
@@ -803,43 +747,6 @@ AtomicSimpleCPU::tcaWriteMemPhysical(Addr addr, uint8_t* data, unsigned size)
     return fault;
 }
 
-Fault
-AtomicSimpleCPU::tcaWriteMem(Addr addr, uint8_t* data, unsigned size)
-{
-    SimpleExecContext &t_info = *threadInfo[curThread];
-    SimpleThread *thread = t_info.thread;
-    // use the CPU's statically allocated amo request and packet objects
-    const RequestPtr &req = data_tca_req;
-    Request::Flags flags;
-    req->taskId(taskId());
-    req->setVirt(addr, size, flags, dataRequestorId(),
-                 thread->pcState().instAddr());
-
-    // translate to physical address
-    Fault fault = thread->mmu->translateAtomic(
-        req, thread->getTC(), BaseMMU::Write);
-
-    // Now do the access.
-    if (fault == NoFault && !req->getFlags().isSet(Request::NO_ACCESS)) {
-        Packet pkt(req, Packet::makeWriteCmd(req));
-        pkt.dataStatic(data);
-
-        dcache_latency += sendPacket(dcachePort, &pkt);
-        DPRINTF(TcaMem, "Done tcaWriteMem, vaddr: %#x, paddr: %#x, size: %i,"
-                " data: %p. \n",
-                addr, req->getPaddr(), size, *(uint64_t*)data);
-        dcache_access = true;
-        panic_if(pkt.isError(), "Atomic access (%s) failed: %s",
-                pkt.getAddrRange().to_string(), pkt.print());
-        assert(!req->isLLSC());
-    }
-
-    if (fault != NoFault && req->isPrefetch()) {
-        return NoFault;
-    }
-    //If there's a fault and we're not doing prefetch, return it
-    return fault;
-}
 
 void
 AtomicSimpleCPU::tick()

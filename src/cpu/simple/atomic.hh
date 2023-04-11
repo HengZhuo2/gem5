@@ -246,10 +246,8 @@ class AtomicSimpleCPU : public BaseSimpleCPU
 
     Fault amoMem(Addr addr, uint8_t *data, unsigned size,
                  Request::Flags flags, AtomicOpFunctorPtr amo_op) override;
-    Fault tcaReadMem(Addr addr, uint8_t *data, unsigned size);
     Fault tcaReadMemPhysical(Addr addr, uint8_t *data, unsigned size);
     Fault tcaWriteMemPhysical(Addr addr, uint8_t *data, unsigned size);
-    Fault tcaWriteMem(Addr addr, uint8_t *data, unsigned size);
     void regProbePoints() override;
 
     /**
