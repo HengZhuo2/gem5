@@ -208,6 +208,11 @@ AtomicSimpleCPU::drainResume()
     threadInfo[0]->thread->lastSuspend = curTick();
     verifyMemoryMode();
 
+    uint64_t* readData = new uint64_t(6666);
+    tcaReadMemPhysical(0x100026c70, (uint8_t*)readData, 8);
+    tnapiBaseVirt = *readData;
+    tnapiBase = *readData- 0xffffff7f80000000;
+
     assert(!threadContexts.empty());
 
     _status = BaseSimpleCPU::Idle;
@@ -1037,8 +1042,6 @@ AtomicSimpleCPU:: wakeupNapi(){
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
     // pc 0xffffffc0080a55c0
-    uint64_t tnapiBaseVirt = 0xffffff8081628d00;
-    uint64_t tnapiBase = 0x101628d00;
 
     if (currenTask == tnapiBaseVirt) {
         DPRINTF(TcaMisc, "try_to_wake_up but p == curr,"
@@ -1074,7 +1077,6 @@ AtomicSimpleCPU:: wakeupNapi(){
     *readData=0;
     // rt.read.2 , read rq->nr_running, pc 0xffffffc0080b5a50
     tcaReadMemPhysical(0x27efa9f44, (uint8_t*)readData, 4);
-    DPRINTF(TcaMem, "rq->nr_running before. read: %#x.\n", *readData);
     *writeData =  *readData + 1;
     // rt.write.2 , write rq->nr_running
     tcaWriteMemPhysical(0x27efa9f44, (uint8_t*)writeData, 4);
@@ -1083,7 +1085,6 @@ AtomicSimpleCPU:: wakeupNapi(){
     *readData=0;
     // rt, read and write rq->rt_nr_running , pc 0xffffffc0080b7218
     tcaReadMemPhysical(0x27efaa790, (uint8_t*)readData, 4);
-    DPRINTF(TcaMem, "rq->rt_nr_running before. read: %#x.\n", *readData);
     *writeData =  *readData + 1;
     tcaWriteMemPhysical(0x27efaa790, (uint8_t*)writeData, 4);
     // DPRINTF(TcaMem, "rq->rt_nr_running after. read: %#x.\n", *readData);
@@ -1134,13 +1135,12 @@ AtomicSimpleCPU:: wakeupNapi(){
     tcaWriteMemPhysical(rtListAddr3, (uint8_t*)rtListData3, 8);
     tcaWriteMemPhysical(rtListAddr4, (uint8_t*)rtListData4, 8);
 
-    // set p->__state to TASK_RUNNING pc 0xffffffc0080a3d40
-    *writeData =  0x0;
-    tcaWriteMemPhysical(tnapiBase + 0x10, (uint8_t*)writeData, 4);
-
     //task_struct->on_rq, ffffffc0080a3e38
     *writeData =  0x1;
     tcaWriteMemPhysical(tnapiBase + 0x60, (uint8_t*)writeData, 4);
+    // set p->__state to TASK_RUNNING pc 0xffffffc0080a3d40
+    *writeData =  0x0;
+    tcaWriteMemPhysical(tnapiBase + 0x10, (uint8_t*)writeData, 4);
     return 1;
 }
 
@@ -1149,14 +1149,11 @@ AtomicSimpleCPU:: tcaProcess(){
     // first read in eth1000 , to ethernet part
     uint64_t* readData = new uint64_t(100);
     uint64_t* writeData = new uint64_t(100);
-    // uint64_t tnapiBase = 0xffffff8001d1ce00; // base
-    uint64_t tnapiBase = 0x101628d00;
-    uint64_t rq_base = 0x27efa9f40;
 
     int tcaReturn = 2;
 
     // then check no one have the runqueue lock rq->lock
-    tcaReadMemPhysical(rq_base, (uint8_t*)readData, 4);
+    tcaReadMemPhysical(0x27efa9f40, (uint8_t*)readData, 4);
 
     // DPRINTF(TcaMem, "check rq->lock read done. read: %#x.\n", *readData);
     if (*readData == 0x1) {
@@ -1183,11 +1180,10 @@ AtomicSimpleCPU:: tcaProcess(){
     *writeData = -1;
 
     // ethernet.write.1, mask all future irqs, pc ffffffc008516498
-    tcaWriteMemPhysical(0x400000d8, (uint8_t*)writeData, 4);
+    // tcaWriteMemPhysical(0x400000d8, (uint8_t*)writeData, 4);
     // ethernet.read.2 , dont think its important, pc 0xffffffc0085164a0
-    *readData=0;
-    tcaReadMemPhysical(0x40000008, (uint8_t*)readData, 4);
-    DPRINTF(TcaMem, "second tca-eth read done. read: %#x.\n", *readData);
+    // *readData=0;
+    // tcaReadMemPhysical(0x40000008, (uint8_t*)readData, 4);
 
     *writeData = 0;
     // total_tx_bytes and total_tx_packets, total_rx_bytes and
