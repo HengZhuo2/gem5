@@ -1071,9 +1071,9 @@ AtomicSimpleCPU:: tcaProcess()
 
     *writeData = 0;
     // step 5: write total_tx_bytes and total_tx_packets, 0xffffffc0085164c8
-    tcaWriteMemPhysical(0x81026a60, (uint8_t*)writeData, 8);
+    tcaWriteMemPhysical(0x100026a60, (uint8_t*)writeData, 8);
     // step 6: write total_rx_bytes and total_rx_packets, 0xffffffc0085164d0
-    tcaWriteMemPhysical(0x81026a68, (uint8_t*)writeData, 8);
+    tcaWriteMemPhysical(0x100026a68, (uint8_t*)writeData, 8);
     DPRINTF(TcaMem, "wrote total bytes/packets done.\n");
 
     // step 7: read napi_struct->state , pc 0xffffffc0086ca4e0
