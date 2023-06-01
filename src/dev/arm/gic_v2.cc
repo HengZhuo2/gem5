@@ -421,8 +421,8 @@ GicV2::readCpu(ContextID ctx, Addr daddr)
                     "CPU %d reading IAR.id=%d IAR.cpu=%d, iar=0x%x\n",
                     ctx, iar.ack_id, iar.cpu_id, iar);
 
-            auto tc = sys->threads[1];
-            if (name()== "testsys.realview.gic" && ctx==1 && haveTCA
+            auto tc = sys->threads[2];
+            if (name()== "testsys.realview.gic" && ctx==2 && haveTCA
                     && iar.ack_id == 0x3ff) {
                 tc->getCpuPtr()->resetTCAFlag();
                 DPRINTF(Interrupt, "cpu:[%i] TCA resetTCAFlag, read 0x3ff.\n",
@@ -682,13 +682,13 @@ GicV2::writeCpu(ContextID ctx, Addr daddr, uint32_t data)
         }
         updateRunPri();
 
-        auto tc = sys->threads[0];
+        auto tc = sys->threads[2];
         DPRINTF(Interrupt, "CPU %d done handling intr IAR = %d"
                 "from cpu %d, tca[%i].\n",
                 ctx, iar.ack_id, iar.cpu_id,tc->getCpuPtr()->isTCAFlagSet());
 
         // this never hit
-        if (name()== "testsys.realview.gic" && ctx==1 && haveTCA
+        if (name()== "testsys.realview.gic" && ctx==2 && haveTCA
                 && iar.ack_id == 0x65 && tc->getCpuPtr()->isTCAFlagSet()) {
             tc->getCpuPtr()->resetTCAFlag();
             DPRINTF(Interrupt, "TCA NIC IRQ handled by cpu,"
@@ -904,13 +904,13 @@ GicV2::updateIntState(int hint)
                     "another form[%d]\n", highest_int,
                     cpu, cpuHighestInt[cpu]);
 
-            auto tc = sys->threads[1];
-            if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
+            auto tc = sys->threads[2];
+            if (name()== "testsys.realview.gic" && cpu==2 && haveTCA
                     && cpuHighestInt[cpu] == 0x65) {
                 tc->getCpuPtr()->setTCAFlag();
                 DPRINTF(Interrupt, "TCA set TCAFlag due to irq %#x.\n",
                         cpuHighestInt[cpu]);
-            } else if (name()== "testsys.realview.gic" && cpu==1 && haveTCA
+            } else if (name()== "testsys.realview.gic" && cpu==2 && haveTCA
                     && cpuHighestInt[cpu] != 0x65
                     && tc->getCpuPtr()->isTCAFlagSet()) {
                 tc->getCpuPtr()->resetTCAFlag();
